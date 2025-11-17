@@ -6,7 +6,7 @@ export const getDashboard = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const userId = req.user!.userId;
 
@@ -71,7 +71,7 @@ export const getProjectAnalytics = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { id } = req.params;
     const userId = req.user!.userId;
