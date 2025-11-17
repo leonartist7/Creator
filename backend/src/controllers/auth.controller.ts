@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { User } from '../models';
-import { generateToken, generateRefreshToken } from '../utils/jwt';
+import { supabase } from '../config/supabase';
 import { createError } from '../middleware/errorHandler';
 
 export const register = async (
@@ -20,30 +19,46 @@ export const register = async (
       throw createError('Password must be at least 8 characters', 400);
     }
 
-    // Check if user exists
-    const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) {
-      throw createError('Email already registered', 409);
-    }
-
-    // Create user
-    const user = await User.create({
+    // Create user with Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
-      firstName,
-      lastName,
+      options: {
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+        },
+      },
     });
 
-    // Generate tokens
-    const token = generateToken({ userId: user.id, email: user.email });
-    const refreshToken = generateRefreshToken({ userId: user.id, email: user.email });
+    if (authError) {
+      throw createError(authError.message, 400);
+    }
+
+    if (!authData.user || !authData.session) {
+      throw createError('Failed to create user', 500);
+    }
+
+    // Get user profile
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', authData.user.id)
+      .single();
 
     res.status(201).json({
       success: true,
       data: {
-        user: user.toSafeObject(),
-        token,
-        refreshToken,
+        user: {
+          id: authData.user.id,
+          email: authData.user.email,
+          firstName: profile?.first_name,
+          lastName: profile?.last_name,
+          subscriptionTier: profile?.subscription_tier || 'free',
+          isEmailVerified: authData.user.email_confirmed_at != null,
+        },
+        token: authData.session.access_token,
+        refreshToken: authData.session.refresh_token,
       },
     });
   } catch (error) {
@@ -64,28 +79,40 @@ export const login = async (
       throw createError('Email and password are required', 400);
     }
 
-    // Find user
-    const user = await User.findOne({ where: { email } });
-    if (!user) {
+    // Sign in with Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (authError) {
       throw createError('Invalid credentials', 401);
     }
 
-    // Check password
-    const isValidPassword = await user.comparePassword(password);
-    if (!isValidPassword) {
+    if (!authData.user || !authData.session) {
       throw createError('Invalid credentials', 401);
     }
 
-    // Generate tokens
-    const token = generateToken({ userId: user.id, email: user.email });
-    const refreshToken = generateRefreshToken({ userId: user.id, email: user.email });
+    // Get user profile
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', authData.user.id)
+      .single();
 
     res.json({
       success: true,
       data: {
-        user: user.toSafeObject(),
-        token,
-        refreshToken,
+        user: {
+          id: authData.user.id,
+          email: authData.user.email,
+          firstName: profile?.first_name,
+          lastName: profile?.last_name,
+          subscriptionTier: profile?.subscription_tier || 'free',
+          isEmailVerified: authData.user.email_confirmed_at != null,
+        },
+        token: authData.session.access_token,
+        refreshToken: authData.session.refresh_token,
       },
     });
   } catch (error) {
@@ -105,22 +132,28 @@ export const refresh = async (
       throw createError('Refresh token is required', 400);
     }
 
-    // Verify refresh token
-    const decoded = require('../utils/jwt').verifyToken(refreshToken);
+    // Refresh session with Supabase
+    const { data, error } = await supabase.auth.refreshSession({
+      refresh_token: refreshToken,
+    });
 
-    // Generate new tokens
-    const newToken = generateToken({ userId: decoded.userId, email: decoded.email });
-    const newRefreshToken = generateRefreshToken({ userId: decoded.userId, email: decoded.email });
+    if (error) {
+      throw createError('Invalid refresh token', 401);
+    }
+
+    if (!data.session) {
+      throw createError('Failed to refresh session', 401);
+    }
 
     res.json({
       success: true,
       data: {
-        token: newToken,
-        refreshToken: newRefreshToken,
+        token: data.session.access_token,
+        refreshToken: data.session.refresh_token,
       },
     });
   } catch (error) {
-    next(createError('Invalid refresh token', 401));
+    next(error);
   }
 };
 
@@ -130,15 +163,32 @@ export const getMe = async (
   next: NextFunction
 ) => {
   try {
-    const user = await User.findByPk(req.user.userId);
+    const userId = req.user.userId;
 
-    if (!user) {
+    // Get user from Supabase
+    const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(userId);
+
+    if (authError || !authUser.user) {
       throw createError('User not found', 404);
     }
 
+    // Get user profile
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
     res.json({
       success: true,
-      data: user.toSafeObject(),
+      data: {
+        id: authUser.user.id,
+        email: authUser.user.email,
+        firstName: profile?.first_name,
+        lastName: profile?.last_name,
+        subscriptionTier: profile?.subscription_tier || 'free',
+        isEmailVerified: authUser.user.email_confirmed_at != null,
+      },
     });
   } catch (error) {
     next(error);

@@ -7,13 +7,12 @@ const router = Router();
 // All AI routes require authentication
 router.use(authenticate);
 
-router.post('/generate-ideas', aiController.generateIdeas);
-router.post('/generate-content', aiController.generateContent);
-router.post('/generate-outline', aiController.generateOutline);
-router.post('/expand-content', aiController.expandContent);
-router.post('/improve-text', aiController.improveText);
-router.post('/generate-titles', aiController.generateTitles);
-router.post('/generate-cover', aiController.generateCover);
-router.post('/generate-sales-copy', aiController.generateSalesCopy);
+router.post('/generate-ideas', aiController.generateIdeasController);
+router.post('/generate-content', aiController.generateContentController);
+router.post('/generate-outline', aiController.generateOutlineController);
+router.post('/expand-content', aiController.expandContentController);
+router.post('/improve-text', aiController.improveTextController);
+router.post('/generate-titles', aiController.generateTitlesController);
+router.post('/generate-sales-copy', aiController.generateSalesCopyController);
 
 export default router;

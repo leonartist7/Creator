@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import { Project } from '../models';
+import { supabase } from '../config/supabase';
 import { createError } from '../middleware/errorHandler';
 import { AuthRequest } from '../middleware/auth';
 
@@ -9,14 +9,19 @@ export const getAllProjects = async (
   next: NextFunction
 ) => {
   try {
-    const projects = await Project.findAll({
-      where: { userId: req.user!.userId },
-      order: [['updatedAt', 'DESC']],
-    });
+    const { data: projects, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('user_id', req.user!.userId)
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      throw createError(error.message, 500);
+    }
 
     res.json({
       success: true,
-      data: projects,
+      data: projects || [],
     });
   } catch (error) {
     next(error);
@@ -31,11 +36,14 @@ export const getProjectById = async (
   try {
     const { id } = req.params;
 
-    const project = await Project.findOne({
-      where: { id, userId: req.user!.userId },
-    });
+    const { data: project, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', req.user!.userId)
+      .single();
 
-    if (!project) {
+    if (error || !project) {
       throw createError('Project not found', 404);
     }
 
@@ -60,13 +68,21 @@ export const createProject = async (
       throw createError('Title and type are required', 400);
     }
 
-    const project = await Project.create({
-      userId: req.user!.userId,
-      title,
-      type,
-      content: content || {},
-      metadata: metadata || {},
-    });
+    const { data: project, error } = await supabase
+      .from('projects')
+      .insert({
+        user_id: req.user!.userId,
+        title,
+        type,
+        content: content || {},
+        metadata: metadata || {},
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw createError(error.message, 500);
+    }
 
     res.status(201).json({
       success: true,
@@ -86,21 +102,24 @@ export const updateProject = async (
     const { id } = req.params;
     const { title, type, content, metadata, status } = req.body;
 
-    const project = await Project.findOne({
-      where: { id, userId: req.user!.userId },
-    });
+    const updates: any = {};
+    if (title) updates.title = title;
+    if (type) updates.type = type;
+    if (content !== undefined) updates.content = content;
+    if (metadata !== undefined) updates.metadata = metadata;
+    if (status) updates.status = status;
 
-    if (!project) {
+    const { data: project, error } = await supabase
+      .from('projects')
+      .update(updates)
+      .eq('id', id)
+      .eq('user_id', req.user!.userId)
+      .select()
+      .single();
+
+    if (error || !project) {
       throw createError('Project not found', 404);
     }
-
-    await project.update({
-      ...(title && { title }),
-      ...(type && { type }),
-      ...(content && { content }),
-      ...(metadata && { metadata }),
-      ...(status && { status }),
-    });
 
     res.json({
       success: true,
@@ -119,15 +138,15 @@ export const deleteProject = async (
   try {
     const { id } = req.params;
 
-    const project = await Project.findOne({
-      where: { id, userId: req.user!.userId },
-    });
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', req.user!.userId);
 
-    if (!project) {
+    if (error) {
       throw createError('Project not found', 404);
     }
-
-    await project.destroy();
 
     res.json({
       success: true,

@@ -1,10 +1,18 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import { createError } from '../middleware/errorHandler';
-import { generateWithAI, generateImage, AI_PROMPTS } from '../services/openai.service';
-import { AIGeneration, Project } from '../models';
+import {
+  generateIdeas,
+  generateOutline,
+  expandContent,
+  improveText,
+  generateTitles,
+  generateSalesCopy,
+  generateWithClaude,
+} from '../services/anthropic.service';
+import { supabase } from '../config/supabase';
 
-export const generateIdeas = async (
+export const generateIdeasController = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
@@ -16,48 +24,55 @@ export const generateIdeas = async (
       throw createError('Niche is required', 400);
     }
 
-    const prompt = AI_PROMPTS.ideaGeneration(niche, audience);
-    const result = await generateWithAI(prompt, { responseFormat: 'json' });
+    const result = await generateIdeas(niche, audience);
 
     res.json({
       success: true,
       data: result.content,
+      meta: {
+        tokensUsed: result.tokensUsed,
+        model: result.model,
+      },
     });
   } catch (error) {
     next(error);
   }
 };
 
-export const generateContent = async (
+export const generateContentController = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { projectId, prompt, type, options } = req.body;
+    const { projectId, prompt, options } = req.body;
 
     if (!projectId || !prompt) {
       throw createError('Project ID and prompt are required', 400);
     }
 
     // Verify project ownership
-    const project = await Project.findOne({
-      where: { id: projectId, userId: req.user!.userId },
-    });
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .select('id')
+      .eq('id', projectId)
+      .eq('user_id', req.user!.userId)
+      .single();
 
-    if (!project) {
+    if (projectError || !project) {
       throw createError('Project not found', 404);
     }
 
-    const result = await generateWithAI(prompt, options);
+    const result = await generateWithClaude(prompt, options);
 
     // Save AI generation
-    await AIGeneration.create({
-      projectId,
+    await supabase.from('ai_generations').insert({
+      project_id: projectId,
+      user_id: req.user!.userId,
       prompt,
       response: typeof result.content === 'string' ? result.content : JSON.stringify(result.content),
-      modelUsed: result.model,
-      tokensUsed: result.tokensUsed,
+      model_used: result.model,
+      tokens_used: result.tokensUsed,
     });
 
     res.json({
@@ -73,7 +88,7 @@ export const generateContent = async (
   }
 };
 
-export const generateOutline = async (
+export const generateOutlineController = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
@@ -85,19 +100,22 @@ export const generateOutline = async (
       throw createError('Title and topic are required', 400);
     }
 
-    const prompt = AI_PROMPTS.chapterOutline(title, topic, style);
-    const result = await generateWithAI(prompt, { responseFormat: 'json' });
+    const result = await generateOutline(title, topic, style);
 
     res.json({
       success: true,
       data: result.content,
+      meta: {
+        tokensUsed: result.tokensUsed,
+        model: result.model,
+      },
     });
   } catch (error) {
     next(error);
   }
 };
 
-export const expandContent = async (
+export const expandContentController = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
@@ -109,19 +127,22 @@ export const expandContent = async (
       throw createError('Bullet points are required', 400);
     }
 
-    const prompt = AI_PROMPTS.contentExpansion(bullets, style);
-    const result = await generateWithAI(prompt);
+    const result = await expandContent(bullets, style);
 
     res.json({
       success: true,
       data: result.content,
+      meta: {
+        tokensUsed: result.tokensUsed,
+        model: result.model,
+      },
     });
   } catch (error) {
     next(error);
   }
 };
 
-export const improveText = async (
+export const improveTextController = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
@@ -133,19 +154,22 @@ export const improveText = async (
       throw createError('Text and improvement type are required', 400);
     }
 
-    const prompt = AI_PROMPTS.improveText(text, improvement);
-    const result = await generateWithAI(prompt);
+    const result = await improveText(text, improvement);
 
     res.json({
       success: true,
       data: result.content,
+      meta: {
+        tokensUsed: result.tokensUsed,
+        model: result.model,
+      },
     });
   } catch (error) {
     next(error);
   }
 };
 
-export const generateTitles = async (
+export const generateTitlesController = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
@@ -157,42 +181,22 @@ export const generateTitles = async (
       throw createError('Topic and type are required', 400);
     }
 
-    const prompt = AI_PROMPTS.titleGenerator(topic, type);
-    const result = await generateWithAI(prompt, { responseFormat: 'json' });
+    const result = await generateTitles(topic, type);
 
     res.json({
       success: true,
       data: result.content,
+      meta: {
+        tokensUsed: result.tokensUsed,
+        model: result.model,
+      },
     });
   } catch (error) {
     next(error);
   }
 };
 
-export const generateCover = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { prompt, size, quality, style } = req.body;
-
-    if (!prompt) {
-      throw createError('Prompt is required', 400);
-    }
-
-    const result = await generateImage(prompt, { size, quality, style });
-
-    res.json({
-      success: true,
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const generateSalesCopy = async (
+export const generateSalesCopyController = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
@@ -204,12 +208,15 @@ export const generateSalesCopy = async (
       throw createError('Title, type, and audience are required', 400);
     }
 
-    const prompt = AI_PROMPTS.salesCopy(title, type, audience, benefits || []);
-    const result = await generateWithAI(prompt, { responseFormat: 'json' });
+    const result = await generateSalesCopy(title, type, audience, benefits || []);
 
     res.json({
       success: true,
       data: result.content,
+      meta: {
+        tokensUsed: result.tokensUsed,
+        model: result.model,
+      },
     });
   } catch (error) {
     next(error);

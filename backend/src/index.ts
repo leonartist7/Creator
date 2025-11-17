@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import dotenv from 'dotenv';
-import { sequelize } from './database/connection';
+import { supabase } from './config/supabase';
 import authRoutes from './routes/auth.routes';
 import projectRoutes from './routes/project.routes';
 import aiRoutes from './routes/ai.routes';
@@ -43,21 +43,24 @@ app.use('/api/analytics', analyticsRoutes);
 // Error handling
 app.use(errorHandler);
 
-// Database connection and server start
+// Test Supabase connection and start server
 const startServer = async () => {
   try {
-    await sequelize.authenticate();
-    console.log('✅ Database connection established successfully');
+    // Test Supabase connection
+    const { data, error } = await supabase.from('user_profiles').select('count').limit(1);
 
-    // Sync database models (in development)
-    if (process.env.NODE_ENV === 'development') {
-      await sequelize.sync({ alter: true });
-      console.log('✅ Database models synchronized');
+    if (error) {
+      console.warn('⚠️  Supabase connection warning:', error.message);
+      console.log('💡 Make sure to run the SQL schema in your Supabase dashboard');
+    } else {
+      console.log('✅ Supabase connection established successfully');
     }
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🔗 Supabase URL: ${process.env.SUPABASE_URL}`);
+      console.log(`🤖 Anthropic API: ${process.env.ANTHROPIC_API_KEY ? 'configured' : 'NOT configured'}`);
     });
   } catch (error) {
     console.error('❌ Unable to start server:', error);

@@ -1,7 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../middleware/auth';
-import { Project, AIGeneration } from '../models';
-import { Op } from 'sequelize';
+import { supabase } from '../config/supabase';
 
 export const getDashboard = async (
   req: AuthRequest,
@@ -11,49 +10,54 @@ export const getDashboard = async (
   try {
     const userId = req.user!.userId;
 
-    // Get project counts by status
-    const projectStats = await Project.findAll({
-      where: { userId },
-      attributes: [
-        'status',
-        [Project.sequelize!.fn('COUNT', Project.sequelize!.col('id')), 'count'],
-      ],
-      group: ['status'],
-      raw: true,
-    });
+    // Get all projects for stats
+    const { data: projects, error: projectsError } = await supabase
+      .from('projects')
+      .select('status')
+      .eq('user_id', userId);
 
-    // Get total projects
-    const totalProjects = await Project.count({ where: { userId } });
+    if (projectsError) {
+      throw projectsError;
+    }
+
+    // Calculate project stats
+    const projectsByStatus = projects?.reduce((acc: any, proj) => {
+      const status = proj.status;
+      const existing = acc.find((s: any) => s.status === status);
+      if (existing) {
+        existing.count++;
+      } else {
+        acc.push({ status, count: 1 });
+      }
+      return acc;
+    }, []) || [];
 
     // Get recent projects
-    const recentProjects = await Project.findAll({
-      where: { userId },
-      order: [['updatedAt', 'DESC']],
-      limit: 5,
-    });
+    const { data: recentProjects } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false })
+      .limit(5);
 
     // Get AI usage stats
-    const aiGenerations = await AIGeneration.findAll({
-      include: [{
-        model: Project,
-        as: 'project',
-        where: { userId },
-        attributes: [],
-      }],
-    });
+    const { data: aiGenerations } = await supabase
+      .from('ai_generations')
+      .select('tokens_used')
+      .eq('user_id', userId);
 
-    const totalTokensUsed = aiGenerations.reduce((sum, gen) => sum + (gen.tokensUsed || 0), 0);
+    const totalTokensUsed = aiGenerations?.reduce((sum, gen) => sum + (gen.tokens_used || 0), 0) || 0;
 
     res.json({
       success: true,
       data: {
         overview: {
-          totalProjects,
-          projectsByStatus: projectStats,
-          recentProjects,
+          totalProjects: projects?.length || 0,
+          projectsByStatus,
+          recentProjects: recentProjects || [],
         },
         aiUsage: {
-          totalGenerations: aiGenerations.length,
+          totalGenerations: aiGenerations?.length || 0,
           totalTokensUsed,
         },
       },
@@ -72,11 +76,14 @@ export const getProjectAnalytics = async (
     const { id } = req.params;
     const userId = req.user!.userId;
 
-    const project = await Project.findOne({
-      where: { id, userId },
-    });
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .single();
 
-    if (!project) {
+    if (projectError || !project) {
       return res.status(404).json({
         success: false,
         error: { message: 'Project not found' },
@@ -84,22 +91,23 @@ export const getProjectAnalytics = async (
     }
 
     // Get AI generations for this project
-    const aiGenerations = await AIGeneration.findAll({
-      where: { projectId: id },
-      order: [['createdAt', 'DESC']],
-      limit: 10,
-    });
+    const { data: aiGenerations } = await supabase
+      .from('ai_generations')
+      .select('*')
+      .eq('project_id', id)
+      .order('created_at', { ascending: false })
+      .limit(10);
 
-    const totalTokensUsed = aiGenerations.reduce((sum, gen) => sum + (gen.tokensUsed || 0), 0);
+    const totalTokensUsed = aiGenerations?.reduce((sum, gen) => sum + (gen.tokens_used || 0), 0) || 0;
 
     res.json({
       success: true,
       data: {
         project,
         aiUsage: {
-          totalGenerations: aiGenerations.length,
+          totalGenerations: aiGenerations?.length || 0,
           totalTokensUsed,
-          recentGenerations: aiGenerations,
+          recentGenerations: aiGenerations || [],
         },
       },
     });
