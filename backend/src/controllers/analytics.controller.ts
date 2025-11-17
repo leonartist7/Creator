@@ -84,10 +84,11 @@ export const getProjectAnalytics = async (
       .single();
 
     if (projectError || !project) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         error: { message: 'Project not found' },
       });
+      return;
     }
 
     // Get AI generations for this project
