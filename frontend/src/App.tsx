@@ -2,15 +2,17 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastProvider } from './components/ui/Toast';
 import { CommandPalette, useCommandPalette } from './components/CommandPalette';
 import { FloatingAI } from './components/FloatingAI';
+import { WelcomeScreen, useWelcomeScreen } from './components/WelcomeScreen';
 import DashboardPage from './pages/DashboardPage';
 import EditorPage from './pages/EditorPage';
 import ProjectsPage from './pages/ProjectsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import SettingsPage from './pages/SettingsPage';
-import './styles/glassmorphism.css';
+import './styles/index.css';
 
 function AppContent() {
   const commandPalette = useCommandPalette();
+  const welcomeScreen = useWelcomeScreen();
 
   return (
     <>
@@ -26,6 +28,7 @@ function AppContent() {
       {/* Global Components */}
       <CommandPalette isOpen={commandPalette.isOpen} onClose={commandPalette.close} />
       <FloatingAI />
+      {welcomeScreen.isOpen && <WelcomeScreen onClose={welcomeScreen.close} />}
     </>
   );
 }
