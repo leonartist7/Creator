@@ -3,10 +3,13 @@ import { Button } from '../ui/Button';
 import api from '../../utils/api';
 import { Maximize2, Loader2, Copy } from 'lucide-react';
 import { useToast } from '../ui/Toast';
+import { StyleSelector } from './StyleSelector';
+import { StylePresets } from './StylePresets';
 
 export const ContentExpander = () => {
   const [bullets, setBullets] = useState('');
   const [style, setStyle] = useState('conversational');
+  const [tone, setTone] = useState('neutral');
   const [isLoading, setIsLoading] = useState(false);
   const [expandedContent, setExpandedContent] = useState('');
   const { success, error } = useToast();
@@ -22,6 +25,7 @@ export const ContentExpander = () => {
       const response = await api.post('/ai/expand-content', {
         bullets,
         style,
+        tone,
       });
 
       setExpandedContent(response.data.data.content);
@@ -57,23 +61,34 @@ export const ContentExpander = () => {
           </p>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-primary mb-2">
-            Writing Style
-          </label>
-          <select
-            value={style}
-            onChange={(e) => setStyle(e.target.value)}
-            className="input"
-          >
-            <option value="conversational">Conversational & Friendly</option>
-            <option value="professional">Professional & Formal</option>
-            <option value="persuasive">Persuasive & Sales-Oriented</option>
-            <option value="educational">Educational & Informative</option>
-            <option value="storytelling">Storytelling & Engaging</option>
-            <option value="technical">Technical & Detailed</option>
-          </select>
+        {/* Quick Style Presets */}
+        <StylePresets
+          onPresetSelect={(preset) => {
+            setStyle(preset.style);
+            setTone(preset.tone);
+          }}
+          currentStyle={style}
+          currentTone={tone}
+        />
+
+        {/* Divider */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-primary/20"></div>
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="px-2 glass text-muted">or customize</span>
+          </div>
         </div>
+
+        <StyleSelector
+          selectedStyle={style}
+          selectedTone={tone}
+          onStyleChange={setStyle}
+          onToneChange={setTone}
+          showTone={true}
+          showCategories={true}
+        />
 
         <Button
           onClick={handleExpand}
