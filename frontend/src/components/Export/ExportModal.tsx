@@ -107,7 +107,7 @@ export const ExportModal = ({ isOpen, onClose, projectId, projectTitle }: Export
       <div className="space-y-6">
         {/* Format Selection */}
         <div>
-          <h3 className="text-sm font-medium text-gray-900 mb-3">Select Format</h3>
+          <h3 className="text-sm font-medium text-primary mb-3">Select Format</h3>
           <div className="grid gap-3">
             {exportOptions.map((option) => {
               const Icon = option.icon;
@@ -119,7 +119,7 @@ export const ExportModal = ({ isOpen, onClose, projectId, projectTitle }: Export
                   className={`p-4 cursor-pointer transition-all hover:shadow-md ${
                     isSelected
                       ? 'ring-2 ring-primary-500 border-primary-500'
-                      : 'hover:border-gray-300'
+                      : 'hover:border-purple-500'
                   }`}
                   onClick={() => setSelectedFormat(option.format)}
                 >
@@ -128,8 +128,8 @@ export const ExportModal = ({ isOpen, onClose, projectId, projectTitle }: Export
                       <Icon className={`w-6 h-6 ${option.color}`} />
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900">{option.name}</h4>
-                      <p className="text-sm text-gray-500">{option.description}</p>
+                      <h4 className="font-semibold text-primary">{option.name}</h4>
+                      <p className="text-sm text-muted">{option.description}</p>
                     </div>
                     {isSelected && (
                       <CheckCircle className="w-5 h-5 text-primary-600" />
@@ -142,16 +142,16 @@ export const ExportModal = ({ isOpen, onClose, projectId, projectTitle }: Export
         </div>
 
         {/* Export Info */}
-        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-          <h4 className="text-sm font-medium text-gray-900 mb-2">Export Details</h4>
-          <div className="space-y-1 text-sm text-gray-600">
-            <p>Project: <span className="font-medium text-gray-900">{projectTitle || 'Untitled'}</span></p>
-            <p>Format: <span className="font-medium text-gray-900">{selectedFormat.toUpperCase()}</span></p>
+        <div className="glass rounded-lg p-4 border border-primary/20">
+          <h4 className="text-sm font-medium text-primary mb-2">Export Details</h4>
+          <div className="space-y-1 text-sm text-secondary">
+            <p>Project: <span className="font-medium text-primary">{projectTitle || 'Untitled'}</span></p>
+            <p>Format: <span className="font-medium text-primary">{selectedFormat.toUpperCase()}</span></p>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+        <div className="flex justify-end gap-3 pt-4 border-t border-primary/20">
           <Button
             variant="outline"
             onClick={onClose}
