@@ -3,12 +3,20 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/layout/Navbar';
 import { RichTextEditor } from '../components/Editor/RichTextEditor';
 import { ProductIdeator } from '../components/AITools/ProductIdeator';
+import { OutlineGenerator } from '../components/AITools/OutlineGenerator';
+import { ContentExpander } from '../components/AITools/ContentExpander';
+import { TitleGenerator } from '../components/AITools/TitleGenerator';
+import { SalesCopyGenerator } from '../components/AITools/SalesCopyGenerator';
+import { TextImprover } from '../components/AITools/TextImprover';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
+import { useToast } from '../components/ui/Toast';
 import api from '../utils/api';
 import { Save, Sparkles, FileDown, Settings } from 'lucide-react';
+
+type AIToolType = 'ideator' | 'outline' | 'expand' | 'titles' | 'sales' | 'improve';
 
 export default function EditorPage() {
   const { id } = useParams();
@@ -19,7 +27,8 @@ export default function EditorPage() {
   const [type, setType] = useState<'ebook' | 'course' | 'guide'>('ebook');
   const [isSaving, setIsSaving] = useState(false);
   const [showAITools, setShowAITools] = useState(false);
-  const [activeAITool, setActiveAITool] = useState<'ideator' | 'outline' | 'expand' | null>(null);
+  const [activeAITool, setActiveAITool] = useState<AIToolType>('ideator');
+  const { success, error: showError } = useToast();
 
   useEffect(() => {
     if (id) {
@@ -36,7 +45,7 @@ export default function EditorPage() {
       setType(proj.type);
       setContent(proj.content?.html || '');
     } catch (error) {
-      console.error('Failed to load project:', error);
+      showError('Load Failed', 'Failed to load project');
     }
   };
 
@@ -52,12 +61,14 @@ export default function EditorPage() {
 
       if (id) {
         await api.put(`/projects/${id}`, data);
+        success('Saved!', 'Project saved successfully');
       } else {
         const response = await api.post('/projects', data);
         navigate(`/editor/${response.data.data.id}`);
+        success('Created!', 'Project created successfully');
       }
     } catch (error) {
-      console.error('Failed to save project:', error);
+      showError('Save Failed', 'Failed to save project');
     } finally {
       setIsSaving(false);
     }
@@ -176,45 +187,61 @@ export default function EditorPage() {
       <Modal
         isOpen={showAITools}
         onClose={() => setShowAITools(false)}
-        title="AI Tools"
+        title="AI Assistant Tools"
         size="xl"
       >
         <div className="space-y-4">
-          <div className="flex gap-2 border-b border-gray-200 pb-4">
+          <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-4">
             <Button
               size="sm"
               variant={activeAITool === 'ideator' ? 'primary' : 'outline'}
               onClick={() => setActiveAITool('ideator')}
             >
-              Product Ideator
+              💡 Ideas
             </Button>
             <Button
               size="sm"
               variant={activeAITool === 'outline' ? 'primary' : 'outline'}
               onClick={() => setActiveAITool('outline')}
             >
-              Outline Generator
+              📚 Outline
             </Button>
             <Button
               size="sm"
               variant={activeAITool === 'expand' ? 'primary' : 'outline'}
               onClick={() => setActiveAITool('expand')}
             >
-              Content Expander
+              ✨ Expand
+            </Button>
+            <Button
+              size="sm"
+              variant={activeAITool === 'titles' ? 'primary' : 'outline'}
+              onClick={() => setActiveAITool('titles')}
+            >
+              📝 Titles
+            </Button>
+            <Button
+              size="sm"
+              variant={activeAITool === 'sales' ? 'primary' : 'outline'}
+              onClick={() => setActiveAITool('sales')}
+            >
+              💰 Sales Copy
+            </Button>
+            <Button
+              size="sm"
+              variant={activeAITool === 'improve' ? 'primary' : 'outline'}
+              onClick={() => setActiveAITool('improve')}
+            >
+              🔧 Improve
             </Button>
           </div>
 
           {activeAITool === 'ideator' && <ProductIdeator />}
-          {activeAITool === 'outline' && (
-            <div className="text-center py-8 text-gray-600">
-              Outline Generator coming soon...
-            </div>
-          )}
-          {activeAITool === 'expand' && (
-            <div className="text-center py-8 text-gray-600">
-              Content Expander coming soon...
-            </div>
-          )}
+          {activeAITool === 'outline' && <OutlineGenerator />}
+          {activeAITool === 'expand' && <ContentExpander />}
+          {activeAITool === 'titles' && <TitleGenerator />}
+          {activeAITool === 'sales' && <SalesCopyGenerator />}
+          {activeAITool === 'improve' && <TextImprover />}
         </div>
       </Modal>
     </div>
