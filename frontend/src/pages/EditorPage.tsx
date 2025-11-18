@@ -117,12 +117,30 @@ export default function EditorPage() {
       updatedProject = updateWordCount(updatedProject);
       await db.saveProject(updatedProject);
 
+      // Record writing day for streak tracking
+      recordWritingDay();
+
       if (!project) {
         setProject(updatedProject);
         navigate(`/editor/${updatedProject.id}`, { replace: true });
       }
     } catch (error) {
       console.error('Auto-save failed:', error);
+    }
+  };
+
+  const recordWritingDay = () => {
+    const today = new Date().toDateString();
+    const writingDaysStr = localStorage.getItem('writingDays');
+    let writingDays: string[] = writingDaysStr ? JSON.parse(writingDaysStr) : [];
+
+    if (!writingDays.includes(today)) {
+      writingDays.push(today);
+      // Keep only last 365 days
+      if (writingDays.length > 365) {
+        writingDays = writingDays.slice(-365);
+      }
+      localStorage.setItem('writingDays', JSON.stringify(writingDays));
     }
   };
 
@@ -148,6 +166,9 @@ export default function EditorPage() {
 
       updatedProject = updateWordCount(updatedProject);
       await db.saveProject(updatedProject);
+
+      // Record writing day for streak tracking
+      recordWritingDay();
 
       if (!project) {
         setProject(updatedProject);

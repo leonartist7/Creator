@@ -40,11 +40,44 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentStreak, setCurrentStreak] = useState(0);
   const { error: showError } = useToast();
 
   useEffect(() => {
     loadProjects();
+    calculateWritingStreak();
   }, []);
+
+  const calculateWritingStreak = () => {
+    // Get writing days from localStorage
+    const writingDaysStr = localStorage.getItem('writingDays');
+    if (!writingDaysStr) {
+      setCurrentStreak(0);
+      return;
+    }
+
+    const writingDays: string[] = JSON.parse(writingDaysStr);
+    const today = new Date().toDateString();
+
+    // Calculate current streak
+    let streak = 0;
+    const now = new Date();
+
+    for (let i = 0; i < 365; i++) {
+      const checkDate = new Date(now);
+      checkDate.setDate(checkDate.getDate() - i);
+      const dateStr = checkDate.toDateString();
+
+      if (writingDays.includes(dateStr)) {
+        streak++;
+      } else if (i > 0) {
+        // Break if we find a missing day (except today)
+        break;
+      }
+    }
+
+    setCurrentStreak(streak);
+  };
 
   const loadProjects = async () => {
     try {
@@ -321,6 +354,40 @@ export default function DashboardPage() {
 
           {/* Right Column - Insights & Templates */}
           <div className="space-y-6">
+            {/* Writing Streak */}
+            <Card className="glass-strong p-6 bg-gradient-to-br from-orange-500/10 to-red-500/10 border-orange-500/20">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-md">
+                  <Target className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-primary mb-2">Writing Streak</h3>
+                  <div className="flex items-end gap-2 mb-3">
+                    <span className="text-4xl font-bold text-primary">{currentStreak}</span>
+                    <span className="text-lg text-secondary mb-1">
+                      {currentStreak === 1 ? 'day' : 'days'}
+                    </span>
+                  </div>
+                  <p className="text-sm text-secondary">
+                    {currentStreak === 0
+                      ? '🎯 Write today to start your streak!'
+                      : currentStreak === 1
+                      ? '🔥 Great start! Write again tomorrow!'
+                      : currentStreak < 7
+                      ? '💪 Keep it going! You\'re building momentum!'
+                      : currentStreak < 30
+                      ? '⭐ Amazing! You\'re on fire!'
+                      : '🏆 Legendary! You\'re a writing machine!'}
+                  </p>
+                  <div className="mt-3 pt-3 border-t border-primary/10">
+                    <p className="text-xs text-muted">
+                      Write every day to build your streak!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
             {/* Productivity Score */}
             <Card className="glass-strong p-6 bg-gradient-to-br from-primary-500/10 to-secondary-500/10 border-primary-500/20">
               <div className="flex items-start gap-4">
