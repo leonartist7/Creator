@@ -62,7 +62,7 @@ export default function DashboardPage() {
     {
       id: 'ebook',
       name: 'eBook',
-      description: 'Digital book or guide',
+      description: 'Digital book or comprehensive guide',
       type: 'ebook',
       icon: BookOpen,
       color: 'primary',
@@ -70,15 +70,15 @@ export default function DashboardPage() {
     {
       id: 'course',
       name: 'Online Course',
-      description: 'Educational content',
+      description: 'Step-by-step educational content',
       type: 'course',
       icon: GraduationCap,
       color: 'secondary',
     },
     {
       id: 'guide',
-      name: 'Guide',
-      description: 'How-to or tutorial',
+      name: 'How-To Guide',
+      description: 'Practical tutorials and instructions',
       type: 'guide',
       icon: FileType,
       color: 'accent',
@@ -140,15 +140,15 @@ export default function DashboardPage() {
   const recentActivity = getRecentActivity();
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-purple-900/10 dark:to-gray-900">
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold gradient-text mb-2">Dashboard</h1>
-            <p className="text-white/60">Welcome back! Here's your creative workspace.</p>
+            <h1 className="text-3xl font-bold text-primary mb-2">Dashboard</h1>
+            <p className="text-secondary">Welcome back! Here's your creative workspace.</p>
           </div>
           <Link to="/editor">
             <Button size="lg" className="btn-gradient shadow-lg glow">
@@ -163,8 +163,8 @@ export default function DashboardPage() {
           <Card className="glass-strong p-6 hover:glow-sm transition-all">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-white/60 mb-1">Total Projects</p>
-                <p className="text-3xl font-bold text-white">{projects.length}</p>
+                <p className="text-sm text-secondary mb-1">Total Projects</p>
+                <p className="text-3xl font-bold text-primary">{projects.length}</p>
               </div>
               <div className="w-12 h-12 rounded-full bg-primary-500/20 flex items-center justify-center">
                 <BookOpen className="text-primary-400" size={24} />
@@ -175,8 +175,8 @@ export default function DashboardPage() {
           <Card className="glass-strong p-6 hover:glow-sm transition-all">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-white/60 mb-1">In Progress</p>
-                <p className="text-3xl font-bold text-white">{getStatusCount('in_progress')}</p>
+                <p className="text-sm text-secondary mb-1">In Progress</p>
+                <p className="text-3xl font-bold text-primary">{getStatusCount('in_progress')}</p>
               </div>
               <div className="w-12 h-12 rounded-full bg-warning-500/20 flex items-center justify-center">
                 <FileText className="text-warning-400" size={24} />
@@ -187,8 +187,8 @@ export default function DashboardPage() {
           <Card className="glass-strong p-6 hover:glow-sm transition-all">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-white/60 mb-1">Completed</p>
-                <p className="text-3xl font-bold text-white">{getStatusCount('completed')}</p>
+                <p className="text-sm text-secondary mb-1">Completed</p>
+                <p className="text-3xl font-bold text-primary">{getStatusCount('completed')}</p>
               </div>
               <div className="w-12 h-12 rounded-full bg-success-500/20 flex items-center justify-center">
                 <Award className="text-success-400" size={24} />
@@ -199,8 +199,8 @@ export default function DashboardPage() {
           <Card className="glass-strong p-6 hover:glow-sm transition-all">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-white/60 mb-1">Total Words</p>
-                <p className="text-3xl font-bold text-white">
+                <p className="text-sm text-secondary mb-1">Total Words</p>
+                <p className="text-3xl font-bold text-primary">
                   {projects.reduce((sum, p) => sum + p.metadata.wordCount, 0).toLocaleString()}
                 </p>
               </div>
@@ -219,8 +219,8 @@ export default function DashboardPage() {
             <Card className="glass-strong p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-white">Recent Projects</h3>
-                  <p className="text-sm text-white/60">Your latest work</p>
+                  <h3 className="text-lg font-semibold text-primary">Recent Projects</h3>
+                  <p className="text-sm text-secondary">Your latest work</p>
                 </div>
                 <Link to="/projects">
                   <Button variant="outline" size="sm" className="glass">
@@ -230,10 +230,10 @@ export default function DashboardPage() {
               </div>
 
               {projects.length === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed border-white/20 rounded-lg">
-                  <BookOpen size={48} className="text-white/30 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-white mb-2">No projects yet</h3>
-                  <p className="text-white/60 mb-6">Get started by creating your first digital product</p>
+                <div className="text-center py-12 border-2 border-dashed border-primary/20 rounded-lg">
+                  <BookOpen size={48} className="text-muted mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-primary mb-2">No projects yet</h3>
+                  <p className="text-secondary mb-6">Get started by creating your first digital product</p>
                   <Link to="/editor">
                     <Button className="btn-gradient">
                       <Plus size={18} className="mr-2" />
@@ -252,13 +252,13 @@ export default function DashboardPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3 flex-1">
                           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center flex-shrink-0">
-                            <FileText className="w-5 h-5 text-white" />
+                            <FileText className="w-5 h-5 text-primary" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-white group-hover:text-purple-300 transition-colors truncate">
+                            <h4 className="font-medium text-primary group-hover:text-purple-300 transition-colors truncate">
                               {project.title}
                             </h4>
-                            <p className="text-sm text-white/60 capitalize">
+                            <p className="text-sm text-secondary capitalize">
                               {project.type} • {project.metadata.wordCount.toLocaleString()} words
                             </p>
                           </div>
@@ -290,8 +290,8 @@ export default function DashboardPage() {
             {recentActivity.length > 0 && (
               <Card className="glass-strong p-6">
                 <div className="flex items-center gap-2 mb-6">
-                  <Clock className="w-5 h-5 text-white/60" />
-                  <h3 className="text-lg font-semibold text-white">Recent Activity</h3>
+                  <Clock className="w-5 h-5 text-secondary" />
+                  <h3 className="text-lg font-semibold text-primary">Recent Activity</h3>
                 </div>
 
                 <div className="space-y-4">
@@ -306,8 +306,8 @@ export default function DashboardPage() {
                         )}
                       </div>
                       <div className="flex-1 pb-4">
-                        <p className="text-sm font-medium text-white">{activity.title}</p>
-                        <p className="text-xs text-white/60 mt-1">
+                        <p className="text-sm font-medium text-primary">{activity.title}</p>
+                        <p className="text-xs text-secondary mt-1">
                           {activity.action} • {activity.time.toLocaleDateString()} at{' '}
                           {activity.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
@@ -325,13 +325,13 @@ export default function DashboardPage() {
             <Card className="glass-strong p-6 bg-gradient-to-br from-primary-500/10 to-secondary-500/10 border-primary-500/20">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-secondary-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-md">
-                  <TrendingUp className="w-6 h-6 text-white" />
+                  <TrendingUp className="w-6 h-6 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-white mb-2">Productivity Score</h3>
+                  <h3 className="font-semibold text-primary mb-2">Productivity Score</h3>
                   <div className="flex items-end gap-2 mb-3">
-                    <span className="text-4xl font-bold text-white">{productivityScore}</span>
-                    <span className="text-lg text-white/60 mb-1">/100</span>
+                    <span className="text-4xl font-bold text-primary">{productivityScore}</span>
+                    <span className="text-lg text-secondary mb-1">/100</span>
                   </div>
                   <div className="w-full bg-white/10 rounded-full h-2 mb-3">
                     <div
@@ -339,7 +339,7 @@ export default function DashboardPage() {
                       style={{ width: `${productivityScore}%` }}
                     ></div>
                   </div>
-                  <p className="text-sm text-white/80">
+                  <p className="text-sm text-secondary">
                     {productivityScore >= 80
                       ? '🎉 Excellent work! You\'re crushing it!'
                       : productivityScore >= 50
@@ -353,10 +353,10 @@ export default function DashboardPage() {
             {/* Project Templates */}
             <Card className="glass-strong p-6">
               <div className="flex items-center gap-2 mb-4">
-                <Rocket className="w-5 h-5 text-white/60" />
-                <h3 className="text-lg font-semibold text-white">Quick Start</h3>
+                <Rocket className="w-5 h-5 text-secondary" />
+                <h3 className="text-lg font-semibold text-primary">Quick Start</h3>
               </div>
-              <p className="text-sm text-white/60 mb-4">Choose a template to begin</p>
+              <p className="text-sm text-secondary mb-4">Choose a template to begin</p>
 
               <div className="space-y-3">
                 {projectTemplates.map((template) => {
@@ -372,10 +372,10 @@ export default function DashboardPage() {
                           <Icon className={`w-5 h-5 text-${template.color}-400`} />
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-medium text-white group-hover:text-purple-300 transition-colors">
+                          <h4 className="font-medium text-primary group-hover:text-purple-300 transition-colors">
                             {template.name}
                           </h4>
-                          <p className="text-sm text-white/60">{template.description}</p>
+                          <p className="text-sm text-secondary">{template.description}</p>
                         </div>
                         <ChevronRight className="w-5 h-5 text-white/40 group-hover:text-purple-400 transition-colors" />
                       </div>
@@ -389,15 +389,15 @@ export default function DashboardPage() {
             <Card className="glass-strong p-6 bg-gradient-to-br from-secondary-500/10 to-accent-500/10 border-secondary-500/20">
               <div className="flex items-start gap-3 mb-4">
                 <div className="w-10 h-10 bg-gradient-to-br from-secondary-600 to-accent-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Zap className="w-5 h-5 text-white" />
+                  <Zap className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-white mb-1">Pro Tips</h3>
-                  <p className="text-sm text-white/60">Boost your productivity</p>
+                  <h3 className="font-semibold text-primary mb-1">Pro Tips</h3>
+                  <p className="text-sm text-secondary">Boost your productivity</p>
                 </div>
               </div>
 
-              <ul className="space-y-3 text-sm text-white/80">
+              <ul className="space-y-3 text-sm text-secondary">
                 <li className="flex items-start gap-2">
                   <span className="w-1.5 h-1.5 bg-secondary-400 rounded-full mt-1.5 flex-shrink-0"></span>
                   <span>Use ⌘K command palette for quick navigation</span>
