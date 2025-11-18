@@ -7,21 +7,31 @@ import {
   Undo, Redo, AlignLeft, Sparkles
 } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { InlineAI } from './InlineAIExtension';
+import type { AITask } from '../../hooks/useAI';
 
 interface RichTextEditorProps {
   content: string;
   onChange: (content: string) => void;
   onAIAssist?: () => void;
+  onAITrigger?: (task: AITask, text: string) => void;
 }
 
-export const RichTextEditor = ({ content, onChange, onAIAssist }: RichTextEditorProps) => {
+export const RichTextEditor = ({ content, onChange, onAIAssist, onAITrigger }: RichTextEditorProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
       Placeholder.configure({
-        placeholder: 'Start writing your content here...',
+        placeholder: 'Start writing your content here... (Use ++, >>, ??, //, @@ for AI triggers)',
       }),
       CharacterCount,
+      InlineAI.configure({
+        onTrigger: (task, text) => {
+          if (onAITrigger) {
+            onAITrigger(task as AITask, text);
+          }
+        },
+      }),
     ],
     content,
     onUpdate: ({ editor }) => {
@@ -36,8 +46,10 @@ export const RichTextEditor = ({ content, onChange, onAIAssist }: RichTextEditor
   const MenuButton = ({ onClick, active, children }: any) => (
     <button
       onClick={onClick}
-      className={`p-2 rounded hover:bg-gray-100 transition-colors ${
-        active ? 'bg-primary-100 text-primary-700' : 'text-gray-700'
+      className={`p-2 rounded-lg transition-all ${
+        active
+          ? 'bg-purple-500 text-white glow-sm'
+          : 'text-white/70 hover:text-white hover:bg-white/10'
       }`}
       type="button"
     >
@@ -46,9 +58,9 @@ export const RichTextEditor = ({ content, onChange, onAIAssist }: RichTextEditor
   );
 
   return (
-    <div className="border border-gray-300 rounded-lg overflow-hidden">
+    <div className="glass border-0 rounded-xl overflow-hidden">
       {/* Toolbar */}
-      <div className="bg-gray-50 border-b border-gray-300 p-2 flex items-center gap-1 flex-wrap">
+      <div className="bg-white/5 border-b border-white/10 p-2 flex items-center gap-1 flex-wrap">
         <MenuButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           active={editor.isActive('bold')}
@@ -63,7 +75,7 @@ export const RichTextEditor = ({ content, onChange, onAIAssist }: RichTextEditor
           <Italic size={18} />
         </MenuButton>
 
-        <div className="w-px h-6 bg-gray-300 mx-1" />
+        <div className="w-px h-6 bg-white/20 mx-1" />
 
         <MenuButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
@@ -79,7 +91,7 @@ export const RichTextEditor = ({ content, onChange, onAIAssist }: RichTextEditor
           <Heading2 size={18} />
         </MenuButton>
 
-        <div className="w-px h-6 bg-gray-300 mx-1" />
+        <div className="w-px h-6 bg-white/20 mx-1" />
 
         <MenuButton
           onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -102,7 +114,7 @@ export const RichTextEditor = ({ content, onChange, onAIAssist }: RichTextEditor
           <Quote size={18} />
         </MenuButton>
 
-        <div className="w-px h-6 bg-gray-300 mx-1" />
+        <div className="w-px h-6 bg-white/20 mx-1" />
 
         <MenuButton onClick={() => editor.chain().focus().undo().run()}>
           <Undo size={18} />
@@ -128,11 +140,11 @@ export const RichTextEditor = ({ content, onChange, onAIAssist }: RichTextEditor
       </div>
 
       {/* Editor */}
-      <EditorContent editor={editor} className="prose max-w-none" />
+      <EditorContent editor={editor} className="prose prose-invert max-w-none min-h-[400px] p-4 text-white" />
 
       {/* Footer */}
-      <div className="bg-gray-50 border-t border-gray-300 px-4 py-2 text-sm text-gray-600">
-        {editor.storage.characterCount.characters()} characters, {editor.storage.characterCount.words()} words
+      <div className="bg-white/5 border-t border-white/10 px-4 py-2 text-sm text-white/60">
+        {editor.storage.characterCount.characters()} characters · {editor.storage.characterCount.words()} words
       </div>
     </div>
   );
