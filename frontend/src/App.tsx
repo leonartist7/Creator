@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastProvider } from './components/ui/Toast';
 import { CommandPalette, useCommandPalette } from './components/CommandPalette/CommandPalette';
+import { KeyboardShortcutsPanel, useKeyboardShortcuts } from './components/Help/KeyboardShortcutsPanel';
 import { FloatingAI } from './components/FloatingAI';
 import { WelcomeScreen, useWelcomeScreen } from './components/WelcomeScreen';
 import { useTheme } from './hooks/useTheme';
@@ -14,6 +15,7 @@ import './styles/index.css';
 
 function AppContent() {
   const commandPalette = useCommandPalette();
+  const keyboardShortcuts = useKeyboardShortcuts();
   const welcomeScreen = useWelcomeScreen();
   useTheme(); // Apply theme to document
 
@@ -31,6 +33,7 @@ function AppContent() {
 
       {/* Global Components */}
       <CommandPalette isOpen={commandPalette.isOpen} onClose={() => commandPalette.setIsOpen(false)} />
+      <KeyboardShortcutsPanel isOpen={keyboardShortcuts.isOpen} onClose={() => keyboardShortcuts.setIsOpen(false)} />
       <FloatingAI />
       {welcomeScreen.isOpen && <WelcomeScreen onClose={welcomeScreen.close} />}
     </>
