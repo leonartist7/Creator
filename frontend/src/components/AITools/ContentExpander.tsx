@@ -42,7 +42,7 @@ export const ContentExpander = () => {
     <div className="space-y-6">
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-primary mb-2">
             Bullet Points or Outline
           </label>
           <textarea
@@ -52,13 +52,13 @@ export const ContentExpander = () => {
             className="input min-h-[200px] resize-y font-mono text-sm"
             rows={10}
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-muted mt-1">
             Separate each point with a new line or bullet point (•, -, *)
           </p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-primary mb-2">
             Writing Style
           </label>
           <select
@@ -89,7 +89,7 @@ export const ContentExpander = () => {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-4" />
-            <p className="text-gray-600">Expanding your content...</p>
+            <p className="text-secondary">Expanding your content...</p>
           </div>
         </div>
       )}
@@ -97,7 +97,7 @@ export const ContentExpander = () => {
       {expandedContent && !isLoading && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900">Expanded Content</h3>
+            <h3 className="font-semibold text-primary">Expanded Content</h3>
             <Button variant="outline" size="sm" onClick={copyToClipboard}>
               <Copy size={16} className="mr-2" />
               Copy

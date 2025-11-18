@@ -52,7 +52,7 @@ export const TextImprover = () => {
     <div className="space-y-6">
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-primary mb-2">
             Original Text
           </label>
           <textarea
@@ -62,13 +62,13 @@ export const TextImprover = () => {
             className="input min-h-[200px] resize-y"
             rows={10}
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-muted mt-1">
             {originalText.split(/\s+/).filter(Boolean).length} words, {originalText.length} characters
           </p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-primary mb-2">
             Improvement Type
           </label>
           <div className="space-y-2">
@@ -90,8 +90,8 @@ export const TextImprover = () => {
                   className="mt-1"
                 />
                 <div>
-                  <div className="font-medium text-gray-900">{type.label}</div>
-                  <div className="text-sm text-gray-600">{type.description}</div>
+                  <div className="font-medium text-primary">{type.label}</div>
+                  <div className="text-sm text-secondary">{type.description}</div>
                 </div>
               </label>
             ))}
@@ -112,7 +112,7 @@ export const TextImprover = () => {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-4" />
-            <p className="text-gray-600">Improving your text...</p>
+            <p className="text-secondary">Improving your text...</p>
           </div>
         </div>
       )}
@@ -120,7 +120,7 @@ export const TextImprover = () => {
       {improvedText && !isLoading && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900">Improved Text</h3>
+            <h3 className="font-semibold text-primary">Improved Text</h3>
             <Button variant="outline" size="sm" onClick={copyToClipboard}>
               <Copy size={16} className="mr-2" />
               Copy
@@ -129,16 +129,16 @@ export const TextImprover = () => {
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Original</h4>
+              <h4 className="text-sm font-medium text-primary mb-2">Original</h4>
               <div className="card-flat bg-gray-50 min-h-[200px]">
-                <div className="whitespace-pre-wrap text-sm text-gray-600">{originalText}</div>
+                <div className="whitespace-pre-wrap text-sm text-secondary">{originalText}</div>
               </div>
             </div>
 
             <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Improved</h4>
+              <h4 className="text-sm font-medium text-primary mb-2">Improved</h4>
               <div className="card-flat bg-success-50 border-success-200 min-h-[200px]">
-                <div className="whitespace-pre-wrap text-sm text-gray-900">{improvedText}</div>
+                <div className="whitespace-pre-wrap text-sm text-primary">{improvedText}</div>
               </div>
             </div>
           </div>
