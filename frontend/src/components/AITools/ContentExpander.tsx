@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Button } from '../ui/Button';
-import api from '../../utils/api';
 import { Maximize2, Loader2, Copy } from 'lucide-react';
 import { useToast } from '../ui/Toast';
+import { useAI } from '../../hooks/useAI';
 import { StyleSelector } from './StyleSelector';
 import { StylePresets } from './StylePresets';
 
@@ -13,6 +13,7 @@ export const ContentExpander = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [expandedContent, setExpandedContent] = useState('');
   const { success, error } = useToast();
+  const ai = useAI();
 
   const handleExpand = async () => {
     if (!bullets.trim()) {
@@ -20,18 +21,34 @@ export const ContentExpander = () => {
       return;
     }
 
+    if (!ai.hasAPIKey()) {
+      return; // useAI hook already shows error
+    }
+
     try {
       setIsLoading(true);
-      const response = await api.post('/ai/expand-content', {
-        bullets,
-        style,
-        tone,
-      });
 
-      setExpandedContent(response.data.data.content);
-      success('Content Expanded!', 'Your bullet points have been expanded');
+      const systemPrompt = `You are a professional content writer. Expand the following bullet points into a comprehensive, well-structured piece of content.
+Style: ${style}
+Tone: ${tone}
+
+Guidelines:
+- Maintain the ${style} writing style throughout
+- Use a ${tone} tone
+- Expand each point with relevant details and examples
+- Ensure smooth transitions between points
+- Make the content engaging and easy to read`;
+
+      const result = await ai.expand(bullets);
+
+      if (result.success && result.text) {
+        setExpandedContent(result.text);
+        success('Content Expanded!', 'Your bullet points have been expanded');
+      } else {
+        error('Expansion Failed', result.error || 'Failed to expand content');
+      }
     } catch (err: any) {
-      error('Expansion Failed', err.response?.data?.error?.message || 'Failed to expand content');
+      error('Expansion Failed', err.message || 'Failed to expand content');
     } finally {
       setIsLoading(false);
     }

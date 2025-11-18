@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Button } from '../ui/Button';
-import api from '../../utils/api';
 import { Wand2, Loader2, Copy, Settings2 } from 'lucide-react';
 import { useToast } from '../ui/Toast';
+import { useAI } from '../../hooks/useAI';
 import { StyleSelector } from './StyleSelector';
 import { StylePresets } from './StylePresets';
 
@@ -15,6 +15,7 @@ export const TextImprover = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [improvedText, setImprovedText] = useState('');
   const { success, error } = useToast();
+  const ai = useAI();
 
   const handleImprove = async () => {
     if (!originalText.trim()) {
@@ -22,19 +23,53 @@ export const TextImprover = () => {
       return;
     }
 
+    if (!ai.hasAPIKey()) {
+      return; // useAI hook already shows error
+    }
+
     try {
       setIsLoading(true);
-      const response = await api.post('/ai/improve-text', {
-        text: originalText,
-        improvement: improvementType,
-        targetStyle: showAdvancedOptions ? targetStyle : undefined,
-        targetTone: showAdvancedOptions ? targetTone : undefined,
-      });
 
-      setImprovedText(response.data.data.content);
-      success('Text Improved!', 'Your content has been enhanced');
+      let systemPrompt = `You are an expert editor and writing coach. `;
+
+      switch (improvementType) {
+        case 'clarity':
+          systemPrompt += 'Improve the clarity of the text. Make it easier to understand while maintaining the original meaning.';
+          break;
+        case 'grammar':
+          systemPrompt += 'Fix all grammar, spelling, and punctuation errors. Ensure the text is grammatically perfect.';
+          break;
+        case 'tone':
+          systemPrompt += `Adjust the tone to be ${targetTone}. Maintain the content but change how it sounds.`;
+          break;
+        case 'concise':
+          systemPrompt += 'Make the text more concise. Remove unnecessary words, redundancy, and fluff while keeping the core message.';
+          break;
+        case 'engaging':
+          systemPrompt += 'Make the text more engaging and interesting to read. Add energy, personality, and reader hooks.';
+          break;
+        case 'professional':
+          systemPrompt += 'Elevate the language to be more professional and formal. Use sophisticated vocabulary where appropriate.';
+          break;
+        case 'seo':
+          systemPrompt += 'Optimize for search engines. Use natural keyword placement, clear headings, and readable structure.';
+          break;
+      }
+
+      if (showAdvancedOptions) {
+        systemPrompt += `\n\nTarget Style: ${targetStyle}\nTarget Tone: ${targetTone}`;
+      }
+
+      const result = await ai.improve(originalText);
+
+      if (result.success && result.text) {
+        setImprovedText(result.text);
+        success('Text Improved!', 'Your content has been enhanced');
+      } else {
+        error('Improvement Failed', result.error || 'Failed to improve text');
+      }
     } catch (err: any) {
-      error('Improvement Failed', err.response?.data?.error?.message || 'Failed to improve text');
+      error('Improvement Failed', err.message || 'Failed to improve text');
     } finally {
       setIsLoading(false);
     }

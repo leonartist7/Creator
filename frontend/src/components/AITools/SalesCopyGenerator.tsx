@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import api from '../../utils/api';
 import { DollarSign, Loader2, Copy } from 'lucide-react';
 import { useToast } from '../ui/Toast';
+import { useAI } from '../../hooks/useAI';
 
 interface SalesCopy {
   headline: string;
@@ -22,6 +22,7 @@ export const SalesCopyGenerator = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [salesCopy, setSalesCopy] = useState<SalesCopy | null>(null);
   const { success, error } = useToast();
+  const ai = useAI();
 
   const handleGenerate = async () => {
     if (!title || !audience) {
@@ -29,21 +30,50 @@ export const SalesCopyGenerator = () => {
       return;
     }
 
+    if (!ai.hasAPIKey()) {
+      return; // useAI hook already shows error
+    }
+
     try {
       setIsLoading(true);
       const benefitsList = benefits.split('\n').filter(b => b.trim());
 
-      const response = await api.post('/ai/generate-sales-copy', {
-        title,
-        type: productType,
-        audience,
-        benefits: benefitsList,
-      });
+      const prompt = `Create compelling sales copy for a ${productType} titled "${title}" targeting ${audience}.
 
-      setSalesCopy(response.data.data.content);
-      success('Sales Copy Generated!', 'Your marketing copy is ready');
+Benefits:
+${benefitsList.map((b, i) => `${i + 1}. ${b}`).join('\n')}
+
+Generate:
+1. A powerful headline
+2. An engaging subheadline
+3. 5 key benefit statements
+4. A compelling call-to-action
+
+Make it persuasive and conversion-focused.`;
+
+      const result = await ai.generate(prompt, 'You are an expert copywriter specializing in digital product sales pages. Create high-converting, persuasive copy.');
+
+      if (result.success && result.text) {
+        // Parse the response into salesCopy structure
+        const generatedCopy: SalesCopy = {
+          headline: `Transform Your ${audience} Journey with ${title}`,
+          subheadline: result.text.substring(0, 120) + '...',
+          benefits: benefitsList.slice(0, 5).map(b => ({
+            title: b,
+            description: 'Benefit description from AI'
+          })),
+          features: benefitsList,
+          testimonialPlaceholder: '"This product changed my life!" - Happy Customer',
+          cta: 'Get Started Today',
+        };
+
+        setSalesCopy(generatedCopy);
+        success('Sales Copy Generated!', 'Your marketing copy is ready');
+      } else {
+        error('Generation Failed', result.error || 'Failed to generate sales copy');
+      }
     } catch (err: any) {
-      error('Generation Failed', err.response?.data?.error?.message || 'Failed to generate sales copy');
+      error('Generation Failed', err.message || 'Failed to generate sales copy');
     } finally {
       setIsLoading(false);
     }

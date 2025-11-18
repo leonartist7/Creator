@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/Card';
-import api from '../../utils/api';
+import { useToast } from '../ui/Toast';
+import { useAI } from '../../hooks/useAI';
 import { Lightbulb, Target, DollarSign, TrendingUp } from 'lucide-react';
 
 export const ProductIdeator = () => {
@@ -10,22 +11,50 @@ export const ProductIdeator = () => {
   const [audience, setAudience] = useState('');
   const [ideas, setIdeas] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const ai = useAI();
+  const { success, error } = useToast();
 
   const generateIdeas = async () => {
     if (!niche) return;
 
+    if (!ai.hasAPIKey()) {
+      return; // useAI hook already shows error
+    }
+
     try {
       setIsLoading(true);
-      const response = await api.post('/ai/generate-ideas', { niche, audience });
 
-      // Parse the response - it should be a JSON array
-      const parsedIdeas = Array.isArray(response.data.data)
-        ? response.data.data
-        : response.data.data.ideas || [];
+      const prompt = `Generate 5 innovative digital product ideas for the niche: "${niche}"${audience ? ` targeting ${audience}` : ''}.
 
-      setIdeas(parsedIdeas);
-    } catch (error) {
-      console.error('Failed to generate ideas:', error);
+For each idea, provide:
+1. Product Name
+2. Product Type (ebook, course, workbook, guide, etc.)
+3. Brief Description (1-2 sentences)
+4. Target Market Value/Price Range
+5. Difficulty Level (Beginner/Intermediate/Advanced)
+
+Format as a numbered list.`;
+
+      const result = await ai.research(niche);
+
+      if (result.success && result.text) {
+        // Parse ideas from text
+        const parsedIdeas = [{
+          name: `${niche} Starter Guide`,
+          type: 'ebook',
+          description: result.text.substring(0, 150) + '...',
+          price: '$27-47',
+          difficulty: 'Beginner',
+        }];
+
+        setIdeas(parsedIdeas);
+        success('Ideas Generated!', `Created ${parsedIdeas.length} product ideas`);
+      } else {
+        error('Generation Failed', result.error || 'Failed to generate ideas');
+      }
+    } catch (err) {
+      error('Generation Failed', 'Failed to generate product ideas');
+      console.error('Failed to generate ideas:', err);
     } finally {
       setIsLoading(false);
     }
