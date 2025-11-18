@@ -8,6 +8,7 @@ import { ContentExpander } from '../components/AITools/ContentExpander';
 import { TitleGenerator } from '../components/AITools/TitleGenerator';
 import { SalesCopyGenerator } from '../components/AITools/SalesCopyGenerator';
 import { TextImprover } from '../components/AITools/TextImprover';
+import { ExportModal } from '../components/Export/ExportModal';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
@@ -27,6 +28,7 @@ export default function EditorPage() {
   const [type, setType] = useState<'ebook' | 'course' | 'guide'>('ebook');
   const [isSaving, setIsSaving] = useState(false);
   const [showAITools, setShowAITools] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [activeAITool, setActiveAITool] = useState<AIToolType>('ideator');
   const { success, error: showError } = useToast();
 
@@ -154,7 +156,7 @@ export default function EditorPage() {
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => {}}
+                  onClick={() => setShowExportModal(true)}
                 >
                   <FileDown size={18} className="mr-2" />
                   Export Project
@@ -244,6 +246,14 @@ export default function EditorPage() {
           {activeAITool === 'improve' && <TextImprover />}
         </div>
       </Modal>
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        projectId={id || ''}
+        projectTitle={title}
+      />
     </div>
   );
 }
