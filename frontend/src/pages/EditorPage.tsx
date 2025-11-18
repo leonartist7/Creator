@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Navbar } from '../components/layout/Navbar';
 import { RichTextEditor } from '../components/Editor/RichTextEditor';
 import { FocusMode } from '../components/FocusMode';
-import { ExportModal } from '../components/Export/ExportModal';
+import { EnhancedExportModal } from '../components/Export/EnhancedExportModal';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
@@ -510,7 +510,7 @@ export default function EditorPage() {
           </div>
 
           {/* Export Modal */}
-          <ExportModal
+          <EnhancedExportModal
             isOpen={showExportModal}
             onClose={() => setShowExportModal(false)}
             projectId={project?.id || ''}
