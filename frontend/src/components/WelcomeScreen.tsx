@@ -44,6 +44,65 @@ export const WelcomeScreen = ({ onClose }: WelcomeScreenProps) => {
       ),
     },
     {
+      title: 'Powerful Features',
+      description: '50+ features to accelerate your content creation',
+      content: (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[
+            {
+              icon: <Sparkles size={24} />,
+              name: '180+ AI Styles',
+              description: '18 writing styles × 10 tones',
+              gradient: 'from-purple-500 to-pink-500',
+            },
+            {
+              icon: <BookOpen size={24} />,
+              name: '5 Pro Templates',
+              description: '60,000+ pre-written words',
+              gradient: 'from-blue-500 to-cyan-500',
+            },
+            {
+              icon: <FileType size={24} />,
+              name: '8 Export Formats',
+              description: 'PDF, ePub, DOCX templates',
+              gradient: 'from-green-500 to-emerald-500',
+            },
+            {
+              icon: <Zap size={24} />,
+              name: 'Quick Command',
+              description: 'Ctrl+K for instant actions',
+              gradient: 'from-yellow-500 to-orange-500',
+            },
+            {
+              icon: <Keyboard size={24} />,
+              name: '26 Shortcuts',
+              description: 'Keyboard-driven workflow',
+              gradient: 'from-red-500 to-pink-500',
+            },
+            {
+              icon: <GraduationCap size={24} />,
+              name: 'Resource Library',
+              description: 'Snippets, prompts, templates',
+              gradient: 'from-indigo-500 to-purple-500',
+            },
+          ].map((feature, i) => (
+            <div
+              key={i}
+              className="glass p-4 rounded-xl hover:scale-105 transition-all group"
+            >
+              <div
+                className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}
+              >
+                <div className="text-white">{feature.icon}</div>
+              </div>
+              <h4 className="text-white font-semibold mb-1">{feature.name}</h4>
+              <p className="text-white/60 text-xs">{feature.description}</p>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
       title: 'Quick Start Templates',
       description: 'Choose a template to get started',
       content: (
