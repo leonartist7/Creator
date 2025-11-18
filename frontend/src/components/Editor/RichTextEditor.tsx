@@ -7,21 +7,31 @@ import {
   Undo, Redo, AlignLeft, Sparkles
 } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { InlineAI } from './InlineAIExtension';
+import type { AITask } from '../../hooks/useAI';
 
 interface RichTextEditorProps {
   content: string;
   onChange: (content: string) => void;
   onAIAssist?: () => void;
+  onAITrigger?: (task: AITask, text: string) => void;
 }
 
-export const RichTextEditor = ({ content, onChange, onAIAssist }: RichTextEditorProps) => {
+export const RichTextEditor = ({ content, onChange, onAIAssist, onAITrigger }: RichTextEditorProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
       Placeholder.configure({
-        placeholder: 'Start writing your content here...',
+        placeholder: 'Start writing your content here... (Use ++, >>, ??, //, @@ for AI triggers)',
       }),
       CharacterCount,
+      InlineAI.configure({
+        onTrigger: (task, text) => {
+          if (onAITrigger) {
+            onAITrigger(task as AITask, text);
+          }
+        },
+      }),
     ],
     content,
     onUpdate: ({ editor }) => {
