@@ -10,9 +10,13 @@ import {
   Zap,
   Maximize2,
   Minimize2,
+  AlertCircle,
+  Settings,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAI } from '../hooks/useAI';
 import { useToast } from './ui/Toast';
+import { useSettingsStore } from '../stores/settingsStore';
 import '../styles/glassmorphism.css';
 
 interface Message {
@@ -26,8 +30,12 @@ export const FloatingAI = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { chat } = useAI();
-  const { error: showError } = useToast();
+  const { chat, hasAPIKey } = useAI();
+  const { error: showError, success } = useToast();
+  const settings = useSettingsStore();
+  const navigate = useNavigate();
+
+  const hasConfiguredKeys = Object.values(settings.apiKeys).some(key => key && key.length > 0);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -39,6 +47,15 @@ export const FloatingAI = () => {
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
+
+    // Check for API key
+    if (!hasAPIKey()) {
+      showError(
+        'API Key Required',
+        'Please add your API key in Settings to use AI Assistant'
+      );
+      return;
+    }
 
     const userMessage: Message = { role: 'user', content: input };
     setMessages((prev) => [...prev, userMessage]);
@@ -188,17 +205,43 @@ export const FloatingAI = () => {
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center">
-                <div className="w-16 h-16 rounded-full gradient-primary/20 flex items-center justify-center mb-4">
-                  <Sparkles size={32} className="text-purple-400" />
-                </div>
-                <h4 className="text-white font-medium mb-2">
-                  How can I help you create?
-                </h4>
-                <p className="text-sm text-white/60 max-w-xs">
-                  Use quick actions above or chat with me to brainstorm, write,
-                  and improve your content.
-                </p>
+              <div className="flex flex-col items-center justify-center h-full text-center px-4">
+                {!hasConfiguredKeys ? (
+                  <>
+                    <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center mb-4">
+                      <AlertCircle size={32} className="text-amber-400" />
+                    </div>
+                    <h4 className="text-white font-medium mb-2">
+                      API Key Required
+                    </h4>
+                    <p className="text-sm text-white/60 max-w-xs mb-4">
+                      To use the AI Assistant, please configure your API key in Settings.
+                    </p>
+                    <button
+                      onClick={() => {
+                        navigate('/settings');
+                        setIsExpanded(false);
+                      }}
+                      className="btn-gradient px-4 py-2 rounded-lg flex items-center gap-2"
+                    >
+                      <Settings size={16} />
+                      Go to Settings
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-16 h-16 rounded-full gradient-primary/20 flex items-center justify-center mb-4">
+                      <Sparkles size={32} className="text-purple-400" />
+                    </div>
+                    <h4 className="text-white font-medium mb-2">
+                      How can I help you create?
+                    </h4>
+                    <p className="text-sm text-white/60 max-w-xs">
+                      Use quick actions above or chat with me to brainstorm, write,
+                      and improve your content.
+                    </p>
+                  </>
+                )}
               </div>
             ) : (
               <>
@@ -249,20 +292,28 @@ export const FloatingAI = () => {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask me anything..."
-                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder:text-white/40 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all"
+                placeholder={hasConfiguredKeys ? "Ask me anything..." : "Configure API key first..."}
+                disabled={!hasConfiguredKeys}
+                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder:text-white/40 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <button
                 type="submit"
-                disabled={!input.trim() || isLoading}
+                disabled={!input.trim() || isLoading || !hasConfiguredKeys}
                 className="btn-gradient px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Sparkles size={18} />
               </button>
             </form>
-            <p className="text-xs text-white/40 mt-2 text-center">
-              Configure AI providers in Settings
-            </p>
+            {hasConfiguredKeys ? (
+              <p className="text-xs text-white/40 mt-2 text-center">
+                Using: {settings.activeProvider} • {settings.selectedModel.split('-')[0].toUpperCase()}
+              </p>
+            ) : (
+              <p className="text-xs text-amber-400 mt-2 text-center flex items-center justify-center gap-1">
+                <AlertCircle size={12} />
+                No API key configured
+              </p>
+            )}
           </div>
         </div>
       )}
