@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import api from '../../utils/api';
 import { BookOpen, Loader2 } from 'lucide-react';
 import { useToast } from '../ui/Toast';
+import { useAI } from '../../hooks/useAI';
 
 interface Chapter {
   chapterNumber: number;
@@ -20,6 +20,7 @@ export const OutlineGenerator = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [outline, setOutline] = useState<Chapter[] | null>(null);
   const { success, error } = useToast();
+  const ai = useAI();
 
   const handleGenerate = async () => {
     if (!title || !topic) {
@@ -27,19 +28,49 @@ export const OutlineGenerator = () => {
       return;
     }
 
+    if (!ai.hasAPIKey()) {
+      return; // useAI hook already shows error
+    }
+
     try {
       setIsLoading(true);
-      const response = await api.post('/ai/generate-outline', {
-        title,
-        topic,
-        style,
-      });
 
-      const result = response.data.data.content;
-      setOutline(result.chapters || []);
-      success('Outline Generated!', `Created ${result.chapters?.length || 0} chapters`);
+      const result = await ai.generateOutline(title, topic);
+
+      if (result.success && result.text) {
+        // Parse the AI response into chapters
+        const lines = result.text.split('\n').filter(line => line.trim());
+        const chapters: Chapter[] = [];
+        let currentChapter: Chapter | null = null;
+
+        lines.forEach((line, idx) => {
+          if (line.match(/^(Chapter|Section)\s+\d+/i)) {
+            if (currentChapter) {
+              chapters.push(currentChapter);
+            }
+            currentChapter = {
+              chapterNumber: chapters.length + 1,
+              title: line.replace(/^(Chapter|Section)\s+\d+:\s*/i, '').trim(),
+              subtopics: [],
+              wordCount: 1500,
+              keyTakeaways: [],
+            };
+          } else if (line.match(/^[-•*]\s/) && currentChapter) {
+            currentChapter.subtopics.push(line.replace(/^[-•*]\s*/, '').trim());
+          }
+        });
+
+        if (currentChapter) {
+          chapters.push(currentChapter);
+        }
+
+        setOutline(chapters);
+        success('Outline Generated!', `Created ${chapters.length} chapters`);
+      } else {
+        error('Generation Failed', result.error || 'Failed to generate outline');
+      }
     } catch (err: any) {
-      error('Generation Failed', err.response?.data?.error?.message || 'Failed to generate outline');
+      error('Generation Failed', err.message || 'Failed to generate outline');
     } finally {
       setIsLoading(false);
     }

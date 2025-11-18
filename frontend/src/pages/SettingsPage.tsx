@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar } from '../components/layout/Navbar';
 import {
   Key,
@@ -27,10 +27,17 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<'personalization' | 'api' | 'ui' | 'writing' | 'shortcuts'>('personalization');
   const [showKeys, setShowKeys] = useState(false);
 
-  // API Keys state
-  const [openaiKey, setOpenaiKey] = useState(settings.apiKeys.openai || '');
-  const [anthropicKey, setAnthropicKey] = useState(settings.apiKeys.anthropic || '');
-  const [googleKey, setGoogleKey] = useState(settings.apiKeys.google || '');
+  // API Keys state - Initialize from persisted settings
+  const [openaiKey, setOpenaiKey] = useState('');
+  const [anthropicKey, setAnthropicKey] = useState('');
+  const [googleKey, setGoogleKey] = useState('');
+
+  // Load persisted API keys on mount
+  useEffect(() => {
+    setOpenaiKey(settings.apiKeys.openai || '');
+    setAnthropicKey(settings.apiKeys.anthropic || '');
+    setGoogleKey(settings.apiKeys.google || '');
+  }, [settings.apiKeys]);
 
   const handleSaveAPIKeys = () => {
     if (openaiKey) settings.setAPIKey('openai', openaiKey);
