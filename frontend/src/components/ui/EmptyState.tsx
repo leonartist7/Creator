@@ -25,10 +25,10 @@ export const EmptyState = ({
   className = '',
 }: EmptyStateProps) => {
   const defaultIcons = {
-    default: <FileX className="w-16 h-16 text-gray-300" />,
-    search: <Search className="w-16 h-16 text-gray-300" />,
-    error: <AlertCircle className="w-16 h-16 text-error-300" />,
-    inbox: <Inbox className="w-16 h-16 text-gray-300" />,
+    default: <FileX className="w-16 h-16 text-muted" />,
+    search: <Search className="w-16 h-16 text-muted" />,
+    error: <AlertCircle className="w-16 h-16 text-error-400" />,
+    inbox: <Inbox className="w-16 h-16 text-muted" />,
   };
 
   const displayIcon = icon || defaultIcons[variant];

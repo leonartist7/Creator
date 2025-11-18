@@ -137,12 +137,12 @@ const ToastItem = ({ toast, onClose }: ToastItemProps) => {
     <div className={`toast ${typeClasses[toast.type]}`} role="alert">
       <div className="flex-shrink-0">{icons[toast.type]}</div>
       <div className="flex-1">
-        <p className="font-semibold text-gray-900">{toast.title}</p>
-        {toast.message && <p className="text-sm text-gray-600 mt-1">{toast.message}</p>}
+        <p className="font-semibold text-primary">{toast.title}</p>
+        {toast.message && <p className="text-sm text-secondary mt-1">{toast.message}</p>}
       </div>
       <button
         onClick={onClose}
-        className="flex-shrink-0 ml-2 text-gray-400 hover:text-gray-600 transition-colors"
+        className="flex-shrink-0 ml-2 text-muted hover:text-primary transition-all rounded-lg p-1"
         aria-label="Close"
       >
         <X className="w-5 h-5" />

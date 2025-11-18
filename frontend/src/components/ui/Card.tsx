@@ -11,11 +11,11 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={clsx(
-          'bg-white rounded-xl p-6',
+          'rounded-xl p-6',
           {
-            'shadow-sm border border-gray-200': variant === 'default',
-            'border-2 border-gray-300': variant === 'bordered',
-            'shadow-lg': variant === 'elevated',
+            'glass': variant === 'default',
+            'glass-strong border-2 border-primary/20': variant === 'bordered',
+            'glass-strong shadow-lg glow': variant === 'elevated',
           },
           className
         )}
@@ -36,13 +36,13 @@ export const CardHeader = ({ className, children, ...props }: HTMLAttributes<HTM
 );
 
 export const CardTitle = ({ className, children, ...props }: HTMLAttributes<HTMLHeadingElement>) => (
-  <h3 className={clsx('text-xl font-semibold text-gray-900', className)} {...props}>
+  <h3 className={clsx('text-xl font-semibold text-primary', className)} {...props}>
     {children}
   </h3>
 );
 
 export const CardDescription = ({ className, children, ...props }: HTMLAttributes<HTMLParagraphElement>) => (
-  <p className={clsx('text-sm text-gray-600 mt-1', className)} {...props}>
+  <p className={clsx('text-sm text-secondary mt-1', className)} {...props}>
     {children}
   </p>
 );
