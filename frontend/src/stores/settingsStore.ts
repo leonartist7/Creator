@@ -6,8 +6,10 @@ export type AIProvider = 'openai' | 'anthropic' | 'google';
 export type AIModel =
   | 'gpt-4-turbo'
   | 'gpt-3.5-turbo'
-  | 'claude-3-opus'
-  | 'claude-3-sonnet'
+  | 'claude-3-opus-20240229'
+  | 'claude-3-sonnet-20240229'
+  | 'claude-3-haiku-20240307'
+  | 'gemini-1.5-pro'
   | 'gemini-pro';
 
 interface APIKeys {
@@ -126,7 +128,19 @@ export const useSettingsStore = create<Settings & SettingsActions>()(
           return { apiKeys: rest };
         }),
 
-      setActiveProvider: (provider) => set({ activeProvider: provider }),
+      setActiveProvider: (provider) =>
+        set((state) => {
+          // Auto-select compatible model when provider changes
+          let selectedModel: AIModel = state.selectedModel;
+          if (provider === 'openai' && !selectedModel.startsWith('gpt')) {
+            selectedModel = 'gpt-4-turbo';
+          } else if (provider === 'anthropic' && !selectedModel.startsWith('claude')) {
+            selectedModel = 'claude-3-sonnet-20240229';
+          } else if (provider === 'google' && !selectedModel.startsWith('gemini')) {
+            selectedModel = 'gemini-pro';
+          }
+          return { activeProvider: provider, selectedModel };
+        }),
 
       setSelectedModel: (model) => set({ selectedModel: model }),
 

@@ -212,6 +212,41 @@ export default function SettingsPage() {
                 </select>
               </div>
 
+              {/* Model Selection */}
+              <div className="glass p-4 rounded-xl">
+                <label className="block text-sm font-medium text-white mb-2">
+                  Model
+                </label>
+                <select
+                  value={settings.selectedModel}
+                  onChange={(e) => settings.setSelectedModel(e.target.value as any)}
+                  className="input-glass"
+                >
+                  {settings.activeProvider === 'openai' && (
+                    <>
+                      <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                      <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    </>
+                  )}
+                  {settings.activeProvider === 'anthropic' && (
+                    <>
+                      <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+                      <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+                      <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
+                    </>
+                  )}
+                  {settings.activeProvider === 'google' && (
+                    <>
+                      <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                      <option value="gemini-pro">Gemini Pro</option>
+                    </>
+                  )}
+                </select>
+                <p className="text-xs text-white/50 mt-2">
+                  Choose which model to use for AI generation
+                </p>
+              </div>
+
               <button
                 onClick={handleSaveAPIKeys}
                 className="btn-gradient px-6 py-3 rounded-lg flex items-center gap-2"

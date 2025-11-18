@@ -265,14 +265,15 @@ export default function EditorPage() {
                     content={content}
                     onChange={setContent}
                     onAIAssist={() => {}}
+                    onAITrigger={handleInlineAI}
                   />
                 </Card>
 
                 {/* AI Trigger Hints */}
                 <div className="glass mt-4 p-4 rounded-xl">
                   <h4 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
-                    <Sparkles size={16} className="text-purple-400" />
-                    AI Triggers
+                    <Sparkles size={16} className={isAIProcessing ? 'text-purple-400 animate-spin' : 'text-purple-400'} />
+                    {isAIProcessing ? 'AI Processing...' : 'AI Triggers'}
                   </h4>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
                     <div className="flex items-center gap-1 text-white/60">
