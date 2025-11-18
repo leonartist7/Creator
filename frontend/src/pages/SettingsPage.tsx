@@ -24,7 +24,8 @@ export default function SettingsPage() {
   const settings = useSettingsStore();
   const { success, error: showError } = useToast();
 
-  const [activeTab, setActiveTab] = useState<'personalization' | 'api' | 'ui' | 'writing' | 'shortcuts'>('personalization');
+  // Default to 'api' tab so users can easily add their keys
+  const [activeTab, setActiveTab] = useState<'personalization' | 'api' | 'ui' | 'writing' | 'shortcuts'>('api');
   const [showKeys, setShowKeys] = useState(false);
 
   // API Keys state - Initialize from persisted settings
@@ -40,11 +41,26 @@ export default function SettingsPage() {
   }, [settings.apiKeys]);
 
   const handleSaveAPIKeys = () => {
-    if (openaiKey) settings.setAPIKey('openai', openaiKey);
-    if (anthropicKey) settings.setAPIKey('anthropic', anthropicKey);
-    if (googleKey) settings.setAPIKey('google', googleKey);
+    let savedCount = 0;
 
-    success('Saved!', 'API keys saved successfully');
+    if (openaiKey.trim()) {
+      settings.setAPIKey('openai', openaiKey.trim());
+      savedCount++;
+    }
+    if (anthropicKey.trim()) {
+      settings.setAPIKey('anthropic', anthropicKey.trim());
+      savedCount++;
+    }
+    if (googleKey.trim()) {
+      settings.setAPIKey('google', googleKey.trim());
+      savedCount++;
+    }
+
+    if (savedCount > 0) {
+      success('API Keys Saved!', `${savedCount} API key${savedCount > 1 ? 's' : ''} saved successfully. You can now use AI tools!`);
+    } else {
+      showError('No Keys to Save', 'Please enter at least one API key');
+    }
   };
 
   const tabs = [
@@ -55,6 +71,9 @@ export default function SettingsPage() {
     { id: 'shortcuts', label: 'Shortcuts', icon: KeyboardIcon },
   ] as const;
 
+  // Count configured API keys
+  const configuredKeysCount = Object.values(settings.apiKeys).filter(key => key && key.length > 0).length;
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -62,10 +81,25 @@ export default function SettingsPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold gradient-text mb-2">Settings</h1>
-          <p className="text-secondary">
-            Customize your workspace and configure AI providers
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold gradient-text mb-2">Settings</h1>
+              <p className="text-secondary">
+                Customize your workspace and configure AI providers
+              </p>
+            </div>
+            {/* API Keys Status Badge */}
+            {configuredKeysCount > 0 && (
+              <div className="glass px-4 py-2 rounded-lg border-2 border-green-500/30">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+                  <span className="text-sm font-medium text-white">
+                    {configuredKeysCount} API Key{configuredKeysCount > 1 ? 's' : ''} Configured
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Tabs */}
@@ -182,9 +216,25 @@ export default function SettingsPage() {
                 <h2 className="text-xl font-semibold text-white mb-2">
                   AI Provider API Keys
                 </h2>
-                <p className="text-white/60 text-sm">
-                  Your API keys are stored locally and never sent to our servers
+                <p className="text-white/60 text-sm mb-4">
+                  Your API keys are stored locally in your browser and never sent to our servers
                 </p>
+
+                {/* Info Box */}
+                <div className="glass p-4 rounded-xl border-2 border-blue-500/30 bg-blue-500/5">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <p className="text-white/90 font-medium mb-1">How it works:</p>
+                      <ul className="text-white/70 space-y-1 text-xs">
+                        <li>✅ Add your API key from OpenAI, Anthropic, or Google</li>
+                        <li>✅ Keys are saved automatically to your browser's localStorage</li>
+                        <li>✅ AI tools will use your keys to make direct API calls</li>
+                        <li>✅ Choose which provider to use below</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* OpenAI */}
@@ -343,13 +393,19 @@ export default function SettingsPage() {
                 </p>
               </div>
 
-              <button
-                onClick={handleSaveAPIKeys}
-                className="btn-gradient px-6 py-3 rounded-lg flex items-center gap-2"
-              >
-                <Save size={18} />
-                Save API Keys
-              </button>
+              {/* Save Button */}
+              <div className="glass p-6 rounded-xl border-2 border-purple-500/30 bg-purple-500/5">
+                <button
+                  onClick={handleSaveAPIKeys}
+                  className="btn-gradient px-8 py-4 rounded-lg flex items-center justify-center gap-2 w-full text-lg font-semibold hover:scale-105 transition-transform"
+                >
+                  <Save size={20} />
+                  Save API Keys
+                </button>
+                <p className="text-center text-xs text-white/60 mt-3">
+                  Your keys will be saved to your browser's localStorage and persist across sessions
+                </p>
+              </div>
             </div>
           )}
 
