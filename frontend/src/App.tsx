@@ -3,6 +3,7 @@ import { ToastProvider } from './components/ui/Toast';
 import { CommandPalette, useCommandPalette } from './components/CommandPalette';
 import { FloatingAI } from './components/FloatingAI';
 import { WelcomeScreen, useWelcomeScreen } from './components/WelcomeScreen';
+import { useTheme } from './hooks/useTheme';
 import DashboardPage from './pages/DashboardPage';
 import EditorPage from './pages/EditorPage';
 import ProjectsPage from './pages/ProjectsPage';
@@ -13,6 +14,7 @@ import './styles/index.css';
 function AppContent() {
   const commandPalette = useCommandPalette();
   const welcomeScreen = useWelcomeScreen();
+  useTheme(); // Apply theme to document
 
   return (
     <>

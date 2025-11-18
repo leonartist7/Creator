@@ -25,7 +25,7 @@ interface Settings {
   selectedModel: AIModel;
 
   // UI Preferences
-  theme: 'dark' | 'light';
+  theme: 'light' | 'dark' | 'auto';
   fontSize: 'sm' | 'md' | 'lg';
   editorWidth: 'narrow' | 'medium' | 'wide';
   showLineNumbers: boolean;
@@ -55,7 +55,7 @@ interface SettingsActions {
   setSelectedModel: (model: AIModel) => void;
 
   // UI
-  setTheme: (theme: 'dark' | 'light') => void;
+  setTheme: (theme: 'light' | 'dark' | 'auto') => void;
   setFontSize: (size: 'sm' | 'md' | 'lg') => void;
   setEditorWidth: (width: 'narrow' | 'medium' | 'wide') => void;
   toggleLineNumbers: () => void;

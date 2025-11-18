@@ -11,6 +11,10 @@ import {
   EyeOff,
   CheckCircle,
   AlertCircle,
+  User,
+  Sun,
+  Moon,
+  Monitor,
 } from 'lucide-react';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useToast } from '../components/ui/Toast';
@@ -20,7 +24,7 @@ export default function SettingsPage() {
   const settings = useSettingsStore();
   const { success, error: showError } = useToast();
 
-  const [activeTab, setActiveTab] = useState<'api' | 'ui' | 'writing' | 'shortcuts'>('api');
+  const [activeTab, setActiveTab] = useState<'personalization' | 'api' | 'ui' | 'writing' | 'shortcuts'>('personalization');
   const [showKeys, setShowKeys] = useState(false);
 
   // API Keys state
@@ -37,8 +41,9 @@ export default function SettingsPage() {
   };
 
   const tabs = [
+    { id: 'personalization', label: 'Personalization', icon: User },
     { id: 'api', label: 'API Keys', icon: Key },
-    { id: 'ui', label: 'Appearance', icon: Palette },
+    { id: 'ui', label: 'Editor', icon: Palette },
     { id: 'writing', label: 'Writing', icon: Zap },
     { id: 'shortcuts', label: 'Shortcuts', icon: KeyboardIcon },
   ] as const;
@@ -51,7 +56,7 @@ export default function SettingsPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold gradient-text mb-2">Settings</h1>
-          <p className="text-white/60">
+          <p className="text-secondary">
             Customize your workspace and configure AI providers
           </p>
         </div>
@@ -64,10 +69,10 @@ export default function SettingsPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all whitespace-nowrap ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all whitespace-nowrap border-2 ${
                   activeTab === tab.id
-                    ? 'glass glow-sm'
-                    : 'bg-white/5 hover:bg-white/10 text-white/60'
+                    ? 'border-purple-500 bg-purple-500/10 text-purple-500'
+                    : 'border-transparent glass text-secondary hover:border-purple-500/50'
                 }`}
               >
                 <Icon size={18} />
@@ -79,6 +84,90 @@ export default function SettingsPage() {
 
         {/* Content */}
         <div className="glass-strong p-6 rounded-2xl">
+          {/* Personalization Tab */}
+          {activeTab === 'personalization' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-xl font-semibold text-primary mb-2">
+                  Personalization
+                </h2>
+                <p className="text-secondary text-sm">
+                  Customize the look and feel of your workspace
+                </p>
+              </div>
+
+              {/* Theme Selection */}
+              <div className="glass p-4 rounded-xl">
+                <label className="block text-sm font-medium text-primary mb-3">
+                  Theme
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  <button
+                    onClick={() => settings.setTheme('light')}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                      settings.theme === 'light'
+                        ? 'border-purple-500 bg-purple-500/10'
+                        : 'border-transparent glass hover:border-purple-500/50'
+                    }`}
+                  >
+                    <Sun size={24} className={settings.theme === 'light' ? 'text-purple-500' : 'text-muted'} />
+                    <span className={`text-sm font-medium ${settings.theme === 'light' ? 'text-purple-500' : 'text-secondary'}`}>
+                      Light
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={() => settings.setTheme('dark')}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                      settings.theme === 'dark'
+                        ? 'border-purple-500 bg-purple-500/10'
+                        : 'border-transparent glass hover:border-purple-500/50'
+                    }`}
+                  >
+                    <Moon size={24} className={settings.theme === 'dark' ? 'text-purple-500' : 'text-muted'} />
+                    <span className={`text-sm font-medium ${settings.theme === 'dark' ? 'text-purple-500' : 'text-secondary'}`}>
+                      Dark
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={() => settings.setTheme('auto')}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                      settings.theme === 'auto'
+                        ? 'border-purple-500 bg-purple-500/10'
+                        : 'border-transparent glass hover:border-purple-500/50'
+                    }`}
+                  >
+                    <Monitor size={24} className={settings.theme === 'auto' ? 'text-purple-500' : 'text-muted'} />
+                    <span className={`text-sm font-medium ${settings.theme === 'auto' ? 'text-purple-500' : 'text-secondary'}`}>
+                      Auto
+                    </span>
+                  </button>
+                </div>
+                <p className="text-xs text-muted mt-3">
+                  Auto mode follows your system preferences
+                </p>
+              </div>
+
+              {/* Accent Color (future feature) */}
+              <div className="glass p-4 rounded-xl opacity-50 pointer-events-none">
+                <label className="block text-sm font-medium text-primary mb-3">
+                  Accent Color
+                </label>
+                <div className="flex gap-2">
+                  <div className="w-8 h-8 rounded-full bg-purple-500 border-2 border-white" />
+                  <div className="w-8 h-8 rounded-full bg-blue-500" />
+                  <div className="w-8 h-8 rounded-full bg-green-500" />
+                  <div className="w-8 h-8 rounded-full bg-amber-500" />
+                  <div className="w-8 h-8 rounded-full bg-red-500" />
+                </div>
+                <p className="text-xs text-muted mt-3">
+                  Coming soon - Custom accent colors
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* API Keys Tab */}
           {activeTab === 'api' && (
             <div className="space-y-6">
