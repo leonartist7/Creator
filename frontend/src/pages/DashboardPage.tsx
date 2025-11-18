@@ -6,6 +6,8 @@ import { Button } from '../components/ui/Button';
 import { LoadingSkeleton, CardSkeleton } from '../components/ui/LoadingSkeleton';
 import { Badge } from '../components/ui/Badge';
 import { useToast } from '../components/ui/Toast';
+import { ProjectTemplatesModal } from '../components/Projects/ProjectTemplatesModal';
+import { QuickActionsPanel } from '../components/Dashboard/QuickActionsPanel';
 import { db } from '../lib/storage/db';
 import type { Project } from '../lib/storage/db';
 import {
@@ -41,6 +43,7 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentStreak, setCurrentStreak] = useState(0);
+  const [showTemplatesModal, setShowTemplatesModal] = useState(false);
   const { error: showError } = useToast();
 
   useEffect(() => {
@@ -267,12 +270,18 @@ export default function DashboardPage() {
                   <BookOpen size={48} className="text-muted mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-primary mb-2">No projects yet</h3>
                   <p className="text-secondary mb-6">Get started by creating your first digital product</p>
-                  <Link to="/editor">
-                    <Button className="btn-gradient">
-                      <Plus size={18} className="mr-2" />
-                      Create Project
+                  <div className="flex gap-3 justify-center">
+                    <Button onClick={() => setShowTemplatesModal(true)} className="btn-gradient">
+                      <Sparkles size={18} className="mr-2" />
+                      Start from Template
                     </Button>
-                  </Link>
+                    <Link to="/editor">
+                      <Button variant="outline">
+                        <Plus size={18} className="mr-2" />
+                        Blank Project
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -417,41 +426,9 @@ export default function DashboardPage() {
               </div>
             </Card>
 
-            {/* Project Templates */}
-            <Card className="glass-strong p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Rocket className="w-5 h-5 text-secondary" />
-                <h3 className="text-lg font-semibold text-primary">Quick Start</h3>
-              </div>
-              <p className="text-sm text-secondary mb-4">Choose a template to begin</p>
 
-              <div className="space-y-3">
-                {projectTemplates.map((template) => {
-                  const Icon = template.icon;
-                  return (
-                    <button
-                      key={template.id}
-                      onClick={() => handleCreateFromTemplate(template.type)}
-                      className="w-full p-4 rounded-lg glass hover:glass-strong hover:glow-sm transition-all text-left group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-lg bg-${template.color}-500/20 flex items-center justify-center`}>
-                          <Icon className={`w-5 h-5 text-${template.color}-400`} />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium text-primary group-hover:text-purple-300 transition-colors">
-                            {template.name}
-                          </h4>
-                          <p className="text-sm text-secondary">{template.description}</p>
-                        </div>
-                        <ChevronRight className="w-5 h-5 text-white/40 group-hover:text-purple-400 transition-colors" />
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </Card>
-
+            {/* Quick Actions Panel */}
+            <QuickActionsPanel onOpenTemplates={() => setShowTemplatesModal(true)} />
             {/* Tips & Insights */}
             <Card className="glass-strong p-6 bg-gradient-to-br from-secondary-500/10 to-accent-500/10 border-secondary-500/20">
               <div className="flex items-start gap-3 mb-4">
@@ -493,6 +470,12 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Project Templates Modal */}
+      <ProjectTemplatesModal
+        isOpen={showTemplatesModal}
+        onClose={() => setShowTemplatesModal(false)}
+      />
     </div>
   );
 }
