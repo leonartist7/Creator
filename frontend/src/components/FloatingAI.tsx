@@ -11,6 +11,8 @@ import {
   Maximize2,
   Minimize2,
 } from 'lucide-react';
+import { useAI } from '../hooks/useAI';
+import { useToast } from './ui/Toast';
 import '../styles/glassmorphism.css';
 
 interface Message {
@@ -24,6 +26,8 @@ export const FloatingAI = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { chat } = useAI();
+  const { error: showError } = useToast();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -41,15 +45,39 @@ export const FloatingAI = () => {
     setInput('');
     setIsLoading(true);
 
-    // TODO: Integrate with actual AI API
-    setTimeout(() => {
-      const aiResponse: Message = {
+    try {
+      // Call real AI API with message history
+      const response = await chat(input, messages);
+
+      if (response.success && response.text) {
+        const aiResponse: Message = {
+          role: 'assistant',
+          content: response.text,
+        };
+        setMessages((prev) => [...prev, aiResponse]);
+      } else {
+        // Handle error - show error message
+        showError(
+          'AI Error',
+          response.error || 'Failed to get AI response. Please check your API keys in Settings.'
+        );
+        // Add error message to chat
+        const errorMessage: Message = {
+          role: 'assistant',
+          content: '⚠️ I encountered an error. Please make sure your API keys are configured in Settings.',
+        };
+        setMessages((prev) => [...prev, errorMessage]);
+      }
+    } catch (error) {
+      showError('Connection Error', 'Failed to connect to AI service.');
+      const errorMessage: Message = {
         role: 'assistant',
-        content: 'This is a placeholder response. Connect your AI API keys in Settings to enable AI features.',
+        content: '⚠️ Connection error. Please try again.',
       };
-      setMessages((prev) => [...prev, aiResponse]);
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const quickActions = [
@@ -188,7 +216,7 @@ export const FloatingAI = () => {
                           : 'bg-white/10 text-white/90'
                       }`}
                     >
-                      <p className="text-sm">{message.content}</p>
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                     </div>
                   </div>
                 ))}

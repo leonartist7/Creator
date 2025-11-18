@@ -63,7 +63,7 @@ export const OutlineGenerator = () => {
         />
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-primary mb-2">
             Writing Style
           </label>
           <select
@@ -93,14 +93,14 @@ export const OutlineGenerator = () => {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-4" />
-            <p className="text-gray-600">Generating your outline...</p>
+            <p className="text-secondary">Generating your outline...</p>
           </div>
         </div>
       )}
 
       {outline && !isLoading && (
         <div className="space-y-4 mt-6">
-          <h3 className="font-semibold text-lg text-gray-900">Generated Outline</h3>
+          <h3 className="font-semibold text-lg text-primary">Generated Outline</h3>
           <div className="space-y-6">
             {outline.map((chapter) => (
               <div
@@ -109,10 +109,10 @@ export const OutlineGenerator = () => {
               >
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h4 className="font-semibold text-gray-900">
+                    <h4 className="font-semibold text-primary">
                       Chapter {chapter.chapterNumber}: {chapter.title}
                     </h4>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-muted mt-1">
                       Est. {chapter.wordCount.toLocaleString()} words
                     </p>
                   </div>
@@ -120,8 +120,8 @@ export const OutlineGenerator = () => {
 
                 <div className="space-y-3">
                   <div>
-                    <h5 className="text-sm font-medium text-gray-700 mb-2">Subtopics:</h5>
-                    <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                    <h5 className="text-sm font-medium text-primary mb-2">Subtopics:</h5>
+                    <ul className="list-disc list-inside text-sm text-secondary space-y-1">
                       {chapter.subtopics.map((subtopic, idx) => (
                         <li key={idx}>{subtopic}</li>
                       ))}
@@ -130,8 +130,8 @@ export const OutlineGenerator = () => {
 
                   {chapter.keyTakeaways && chapter.keyTakeaways.length > 0 && (
                     <div>
-                      <h5 className="text-sm font-medium text-gray-700 mb-2">Key Takeaways:</h5>
-                      <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                      <h5 className="text-sm font-medium text-primary mb-2">Key Takeaways:</h5>
+                      <ul className="list-disc list-inside text-sm text-secondary space-y-1">
                         {chapter.keyTakeaways.map((takeaway, idx) => (
                           <li key={idx}>{takeaway}</li>
                         ))}

@@ -37,7 +37,7 @@ export const Modal = ({ isOpen, onClose, title, size = 'md', children, className
       {/* Modal */}
       <div
         className={clsx(
-          'relative bg-white rounded-2xl shadow-2xl p-6 w-full',
+          'relative glass-strong rounded-2xl shadow-2xl glow p-6 w-full',
           {
             'max-w-sm': size === 'sm',
             'max-w-md': size === 'md',
@@ -50,10 +50,10 @@ export const Modal = ({ isOpen, onClose, title, size = 'md', children, className
         {/* Header */}
         {title && (
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+            <h2 className="text-2xl font-bold text-primary">{title}</h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-muted hover:text-primary hover:glow-sm transition-all rounded-lg p-1"
             >
               <X size={24} />
             </button>

@@ -74,13 +74,13 @@ export const ProductIdeator = () => {
       {/* Generated Ideas */}
       {ideas.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-xl font-semibold text-gray-900">Generated Ideas</h3>
+          <h3 className="text-xl font-semibold text-primary">Generated Ideas</h3>
           <div className="grid gap-4">
             {ideas.map((idea, index) => (
               <Card key={index} variant="bordered">
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between mb-4">
-                    <h4 className="text-lg font-semibold text-gray-900 flex-1">
+                    <h4 className="text-lg font-semibold text-primary flex-1">
                       {idea.title || `Idea ${index + 1}`}
                     </h4>
                     {idea.suggestedPrice && (
@@ -96,23 +96,23 @@ export const ProductIdeator = () => {
                       <div className="flex items-start gap-2">
                         <Target size={16} className="text-primary-600 mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="text-sm font-medium text-gray-700">Target Audience</p>
-                          <p className="text-sm text-gray-600">{idea.audience}</p>
+                          <p className="text-sm font-medium text-primary">Target Audience</p>
+                          <p className="text-sm text-secondary">{idea.audience}</p>
                         </div>
                       </div>
                     )}
 
                     {idea.problem && (
                       <div>
-                        <p className="text-sm font-medium text-gray-700">Problem It Solves</p>
-                        <p className="text-sm text-gray-600">{idea.problem}</p>
+                        <p className="text-sm font-medium text-primary">Problem It Solves</p>
+                        <p className="text-sm text-secondary">{idea.problem}</p>
                       </div>
                     )}
 
                     {idea.valueProposition && (
                       <div>
-                        <p className="text-sm font-medium text-gray-700">Value Proposition</p>
-                        <p className="text-sm text-gray-600">{idea.valueProposition}</p>
+                        <p className="text-sm font-medium text-primary">Value Proposition</p>
+                        <p className="text-sm text-secondary">{idea.valueProposition}</p>
                       </div>
                     )}
 

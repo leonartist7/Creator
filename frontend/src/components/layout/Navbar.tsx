@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '../ui/Button';
-import { Settings, Home, Sparkles } from 'lucide-react';
+import { Settings, Home, Sparkles, BookOpen } from 'lucide-react';
 import '../../styles/glassmorphism.css';
 
 export const Navbar = () => {
@@ -30,6 +30,18 @@ export const Navbar = () => {
             >
               <Home size={18} />
               <span>Dashboard</span>
+            </Link>
+
+            <Link
+              to="/resources"
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
+                isActive('/resources')
+                  ? 'bg-purple-500 text-white glow-sm'
+                  : 'text-white/70 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <BookOpen size={18} />
+              <span>Resources</span>
             </Link>
 
             <Link

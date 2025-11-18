@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Navbar } from '../components/layout/Navbar';
 import { RichTextEditor } from '../components/Editor/RichTextEditor';
 import { FocusMode } from '../components/FocusMode';
-import { ExportModal } from '../components/Export/ExportModal';
+import { EnhancedExportModal } from '../components/Export/EnhancedExportModal';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
@@ -19,6 +19,11 @@ import {
   Focus,
   Clock,
   BarChart3,
+  BookOpen,
+  Keyboard,
+  ChevronDown,
+  ChevronUp,
+  Target,
 } from 'lucide-react';
 import '../styles/glassmorphism.css';
 
@@ -37,7 +42,10 @@ export default function EditorPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [wordCount, setWordCount] = useState(0);
+  const [charCount, setCharCount] = useState(0);
   const [isAIProcessing, setIsAIProcessing] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [wordGoal, setWordGoal] = useState(2000); // Default 2000 words goal
 
   useEffect(() => {
     const templateType = searchParams.get('type') as Project['type'];
@@ -64,10 +72,11 @@ export default function EditorPage() {
   }, [project, title, content]);
 
   useEffect(() => {
-    // Update word count
+    // Update word and character count
     const text = content.replace(/<[^>]*>/g, '');
     const words = text.trim().split(/\s+/).filter(Boolean);
     setWordCount(words.length);
+    setCharCount(text.length);
   }, [content]);
 
   const loadProject = async (projectId: string) => {
@@ -108,12 +117,30 @@ export default function EditorPage() {
       updatedProject = updateWordCount(updatedProject);
       await db.saveProject(updatedProject);
 
+      // Record writing day for streak tracking
+      recordWritingDay();
+
       if (!project) {
         setProject(updatedProject);
         navigate(`/editor/${updatedProject.id}`, { replace: true });
       }
     } catch (error) {
       console.error('Auto-save failed:', error);
+    }
+  };
+
+  const recordWritingDay = () => {
+    const today = new Date().toDateString();
+    const writingDaysStr = localStorage.getItem('writingDays');
+    let writingDays: string[] = writingDaysStr ? JSON.parse(writingDaysStr) : [];
+
+    if (!writingDays.includes(today)) {
+      writingDays.push(today);
+      // Keep only last 365 days
+      if (writingDays.length > 365) {
+        writingDays = writingDays.slice(-365);
+      }
+      localStorage.setItem('writingDays', JSON.stringify(writingDays));
     }
   };
 
@@ -139,6 +166,9 @@ export default function EditorPage() {
 
       updatedProject = updateWordCount(updatedProject);
       await db.saveProject(updatedProject);
+
+      // Record writing day for streak tracking
+      recordWritingDay();
 
       if (!project) {
         setProject(updatedProject);
@@ -195,6 +225,9 @@ export default function EditorPage() {
     }
   };
 
+  // Calculate reading time (200 words per minute)
+  const readingTime = Math.ceil(wordCount / 200);
+
   return (
     <>
       {focusMode ? (
@@ -204,7 +237,7 @@ export default function EditorPage() {
           currentWordCount={wordCount}
         />
       ) : (
-        <div className="min-h-screen">
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-purple-900/10 dark:to-gray-900">
           <Navbar />
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -215,13 +248,13 @@ export default function EditorPage() {
                   placeholder="Project Title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="text-2xl font-semibold border-0 focus:ring-0 px-0 bg-transparent text-white"
+                  className="text-2xl font-semibold border-0 focus:ring-0 px-0 bg-transparent text-primary"
                 />
                 <div className="flex items-center gap-4 mt-2">
                   <select
                     value={type}
                     onChange={(e) => setType(e.target.value as any)}
-                    className="text-sm border-0 focus:ring-0 text-white/60 bg-transparent"
+                    className="text-sm border-0 focus:ring-0 text-secondary bg-transparent"
                   >
                     <option value="ebook">Ebook</option>
                     <option value="course">Course</option>
@@ -229,9 +262,13 @@ export default function EditorPage() {
                     <option value="template">Template</option>
                     <option value="workbook">Workbook</option>
                   </select>
-                  <div className="flex items-center gap-2 text-sm text-white/60">
+                  <div className="flex items-center gap-2 text-sm text-secondary">
                     <Clock size={16} />
                     <span>{wordCount.toLocaleString()} words</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-secondary">
+                    <BookOpen size={16} />
+                    <span>~{readingTime} min read</span>
                   </div>
                 </div>
               </div>
@@ -259,7 +296,7 @@ export default function EditorPage() {
 
             {/* Editor */}
             <div className="grid lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
+              <div className="lg:col-span-2 space-y-4">
                 <Card className="glass-strong p-6">
                   <RichTextEditor
                     content={content}
@@ -270,37 +307,37 @@ export default function EditorPage() {
                 </Card>
 
                 {/* AI Trigger Hints */}
-                <div className="glass mt-4 p-4 rounded-xl">
-                  <h4 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
+                <div className="glass p-4 rounded-xl">
+                  <h4 className="text-sm font-semibold text-primary mb-2 flex items-center gap-2">
                     <Sparkles size={16} className={isAIProcessing ? 'text-purple-400 animate-spin' : 'text-purple-400'} />
                     {isAIProcessing ? 'AI Processing...' : 'AI Triggers'}
                   </h4>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
-                    <div className="flex items-center gap-1 text-white/60">
+                    <div className="flex items-center gap-1 text-secondary">
                       <code className="px-1 py-0.5 bg-purple-500/20 rounded text-purple-400">
                         ++
                       </code>
                       <span>Expand</span>
                     </div>
-                    <div className="flex items-center gap-1 text-white/60">
+                    <div className="flex items-center gap-1 text-secondary">
                       <code className="px-1 py-0.5 bg-purple-500/20 rounded text-purple-400">
                         &gt;&gt;
                       </code>
                       <span>Continue</span>
                     </div>
-                    <div className="flex items-center gap-1 text-white/60">
+                    <div className="flex items-center gap-1 text-secondary">
                       <code className="px-1 py-0.5 bg-purple-500/20 rounded text-purple-400">
                         ??
                       </code>
                       <span>Improve</span>
                     </div>
-                    <div className="flex items-center gap-1 text-white/60">
+                    <div className="flex items-center gap-1 text-secondary">
                       <code className="px-1 py-0.5 bg-purple-500/20 rounded text-purple-400">
                         //
                       </code>
                       <span>Suggest</span>
                     </div>
-                    <div className="flex items-center gap-1 text-white/60">
+                    <div className="flex items-center gap-1 text-secondary">
                       <code className="px-1 py-0.5 bg-purple-500/20 rounded text-purple-400">
                         @@
                       </code>
@@ -312,8 +349,9 @@ export default function EditorPage() {
 
               {/* Sidebar */}
               <div className="space-y-6">
+                {/* Quick Actions */}
                 <Card className="glass-strong p-6">
-                  <h3 className="font-semibold text-white mb-4">Quick Actions</h3>
+                  <h3 className="font-semibold text-primary mb-4">Quick Actions</h3>
                   <div className="space-y-2">
                     <Button
                       variant="outline"
@@ -335,25 +373,144 @@ export default function EditorPage() {
                   </div>
                 </Card>
 
+                {/* Project Stats */}
                 <Card className="glass-strong p-6">
-                  <h3 className="font-semibold text-white mb-2">Project Stats</h3>
-                  <div className="text-sm text-white/60 space-y-1">
-                    <p>Words: {wordCount.toLocaleString()}</p>
-                    <p>Characters: {content.replace(/<[^>]*>/g, '').length.toLocaleString()}</p>
-                    <p>Type: {type}</p>
+                  <h3 className="font-semibold text-primary mb-3">Writing Stats</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-secondary">Words</span>
+                      <span className="font-semibold text-primary">{wordCount.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-secondary">Characters</span>
+                      <span className="font-semibold text-primary">{charCount.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-secondary">Reading Time</span>
+                      <span className="font-semibold text-primary">~{readingTime} min</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm pt-2 border-t border-primary/10">
+                      <span className="text-secondary">Type</span>
+                      <span className="font-semibold text-primary capitalize">{type}</span>
+                    </div>
                     {project && (
-                      <p className="text-xs mt-2 pt-2 border-t border-white/10">
-                        Last saved: {new Date(project.metadata.lastEdited).toLocaleString()}
-                      </p>
+                      <div className="pt-2 border-t border-primary/10">
+                        <p className="text-xs text-muted">
+                          Last saved: {new Date(project.metadata.lastEdited).toLocaleString()}
+                        </p>
+                      </div>
                     )}
                   </div>
+                </Card>
+
+                {/* Word Goal Tracker */}
+                <Card className="glass-strong p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-primary flex items-center gap-2">
+                      <Target size={18} />
+                      Word Goal
+                    </h3>
+                    <input
+                      type="number"
+                      value={wordGoal}
+                      onChange={(e) => setWordGoal(Number(e.target.value))}
+                      className="w-20 text-sm px-2 py-1 rounded bg-primary/10 border border-primary/20 text-primary text-center"
+                      min="100"
+                      step="100"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    {/* Progress Bar */}
+                    <div className="relative h-3 bg-primary/10 rounded-full overflow-hidden">
+                      <div
+                        className="absolute top-0 left-0 h-full btn-gradient transition-all duration-500"
+                        style={{ width: `${Math.min((wordCount / wordGoal) * 100, 100)}%` }}
+                      />
+                    </div>
+
+                    {/* Stats */}
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-secondary">Progress</span>
+                      <span className="font-semibold text-primary">
+                        {wordCount.toLocaleString()} / {wordGoal.toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-secondary">Complete</span>
+                      <span className="font-semibold text-primary">
+                        {Math.round((wordCount / wordGoal) * 100)}%
+                      </span>
+                    </div>
+
+                    {/* Motivational Message */}
+                    {wordCount >= wordGoal ? (
+                      <div className="pt-3 border-t border-primary/10">
+                        <p className="text-xs text-success-600 font-medium">
+                          🎉 Goal achieved! Keep up the great work!
+                        </p>
+                      </div>
+                    ) : wordCount >= wordGoal * 0.75 ? (
+                      <div className="pt-3 border-t border-primary/10">
+                        <p className="text-xs text-secondary">
+                          Almost there! Just {(wordGoal - wordCount).toLocaleString()} more words.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="pt-3 border-t border-primary/10">
+                        <p className="text-xs text-muted">
+                          {(wordGoal - wordCount).toLocaleString()} words to go!
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+
+                {/* Keyboard Shortcuts */}
+                <Card className="glass-strong p-6">
+                  <button
+                    onClick={() => setShowShortcuts(!showShortcuts)}
+                    className="w-full flex items-center justify-between text-primary font-semibold mb-3"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Keyboard size={18} />
+                      <span>Keyboard Shortcuts</span>
+                    </div>
+                    {showShortcuts ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                  </button>
+
+                  {showShortcuts && (
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-secondary">Bold</span>
+                        <code className="text-xs bg-primary/10 px-2 py-1 rounded text-primary">Ctrl+B</code>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-secondary">Italic</span>
+                        <code className="text-xs bg-primary/10 px-2 py-1 rounded text-primary">Ctrl+I</code>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-secondary">Underline</span>
+                        <code className="text-xs bg-primary/10 px-2 py-1 rounded text-primary">Ctrl+U</code>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-secondary">Undo</span>
+                        <code className="text-xs bg-primary/10 px-2 py-1 rounded text-primary">Ctrl+Z</code>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-secondary">Redo</span>
+                        <code className="text-xs bg-primary/10 px-2 py-1 rounded text-primary">Ctrl+Y</code>
+                      </div>
+                    </div>
+                  )}
                 </Card>
               </div>
             </div>
           </div>
 
           {/* Export Modal */}
-          <ExportModal
+          <EnhancedExportModal
             isOpen={showExportModal}
             onClose={() => setShowExportModal(false)}
             projectId={project?.id || ''}

@@ -18,6 +18,12 @@ import {
   BarChart3,
   PieChart as PieChartIcon,
 } from 'lucide-react';
+  Award,
+  Target,
+  Lightbulb,
+import { WritingPerformanceMetrics } from '../components/Analytics/WritingPerformanceMetrics';
+import { MilestonesTracker } from '../components/Analytics/MilestonesTracker';
+import { SmartInsights } from '../components/Analytics/SmartInsights';
 
 interface DashboardData {
   overview: {
@@ -88,7 +94,7 @@ export default function AnalyticsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-purple-900/10 dark:to-gray-900">
         <Navbar />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <LoadingSkeleton height="2rem" width="200px" className="mb-8" />
@@ -105,27 +111,27 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-purple-900/10 dark:to-gray-900">
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
-            <p className="text-gray-600 mt-1">Track your productivity and AI usage</p>
+            <h1 className="text-3xl font-bold text-primary">Analytics</h1>
+            <p className="text-secondary mt-1">Track your productivity and AI usage</p>
           </div>
 
           {/* Time Range Filter */}
-          <div className="flex items-center gap-2 bg-white rounded-lg border border-gray-200 p-1">
+          <div className="flex items-center gap-2 glass rounded-xl p-1">
             {(['7d', '30d', '90d', 'all'] as const).map((range) => (
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   timeRange === range
-                    ? 'bg-primary-600 text-white'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    ? 'btn-gradient text-white'
+                    : 'text-secondary hover:text-primary hover:glow-sm'
                 }`}
               >
                 {range === 'all' ? 'All Time' : range.toUpperCase()}
@@ -183,10 +189,10 @@ export default function AnalyticsPage() {
           <Card className="p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Activity Trend</h3>
-                <p className="text-sm text-gray-500">Projects and AI usage over time</p>
+                <h3 className="text-lg font-semibold text-primary">Activity Trend</h3>
+                <p className="text-sm text-secondary">Projects and AI usage over time</p>
               </div>
-              <BarChart3 className="w-5 h-5 text-gray-400" />
+              <BarChart3 className="w-5 h-5 text-muted" />
             </div>
             <LineChart
               data={mockTrendData}
@@ -203,10 +209,10 @@ export default function AnalyticsPage() {
           <Card className="p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Project Status</h3>
-                <p className="text-sm text-gray-500">Distribution by status</p>
+                <h3 className="text-lg font-semibold text-primary">Project Status</h3>
+                <p className="text-sm text-secondary">Distribution by status</p>
               </div>
-              <PieChartIcon className="w-5 h-5 text-gray-400" />
+              <PieChartIcon className="w-5 h-5 text-muted" />
             </div>
             {getProjectStatusData().length > 0 ? (
               <PieChart
@@ -215,7 +221,7 @@ export default function AnalyticsPage() {
                 height={280}
               />
             ) : (
-              <div className="flex items-center justify-center h-[280px] text-gray-500">
+              <div className="flex items-center justify-center h-[280px] text-muted">
                 No projects yet
               </div>
             )}
@@ -225,10 +231,10 @@ export default function AnalyticsPage() {
           <Card className="p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">AI Tools Usage</h3>
-                <p className="text-sm text-gray-500">Most used AI generators</p>
+                <h3 className="text-lg font-semibold text-primary">AI Tools Usage</h3>
+                <p className="text-sm text-secondary">Most used AI generators</p>
               </div>
-              <Sparkles className="w-5 h-5 text-gray-400" />
+              <Sparkles className="w-5 h-5 text-muted" />
             </div>
             <BarChart
               data={mockAIToolsData}
@@ -244,10 +250,10 @@ export default function AnalyticsPage() {
           <Card className="p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Token Usage</h3>
-                <p className="text-sm text-gray-500">AI token consumption</p>
+                <h3 className="text-lg font-semibold text-primary">Token Usage</h3>
+                <p className="text-sm text-secondary">AI token consumption</p>
               </div>
-              <Zap className="w-5 h-5 text-gray-400" />
+              <Zap className="w-5 h-5 text-muted" />
             </div>
             <LineChart
               data={mockTrendData}
@@ -265,21 +271,21 @@ export default function AnalyticsPage() {
           <Card className="p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Recent Projects</h3>
-                <p className="text-sm text-gray-500">Your latest work</p>
+                <h3 className="text-lg font-semibold text-primary">Recent Projects</h3>
+                <p className="text-sm text-secondary">Your latest work</p>
               </div>
-              <Calendar className="w-5 h-5 text-gray-400" />
+              <Calendar className="w-5 h-5 text-muted" />
             </div>
 
             <div className="space-y-4">
               {data.overview.recentProjects.map((project: any) => (
                 <div
                   key={project.id}
-                  className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-primary-300 transition-colors"
+                  className="flex items-center justify-between p-4 rounded-lg glass border border-primary/10 hover:border-purple-500 hover:glow-sm transition-all"
                 >
                   <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900">{project.title}</h4>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <h4 className="font-semibold text-primary">{project.title}</h4>
+                    <p className="text-sm text-secondary mt-1">
                       {project.type.charAt(0).toUpperCase() + project.type.slice(1)} •{' '}
                       Updated {new Date(project.updated_at).toLocaleDateString()}
                     </p>
@@ -304,28 +310,46 @@ export default function AnalyticsPage() {
         )}
 
         {/* Insights */}
-        <Card className="p-6 mt-6 bg-gradient-to-br from-primary-50 to-secondary-50 border-primary-200">
+        <Card className="p-6 mt-6 glass-strong border-2 border-primary/20">
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 btn-gradient rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-6 h-6 text-white" />
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Productivity Insights</h3>
-              <ul className="space-y-2 text-sm text-gray-700">
+              <h3 className="text-lg font-semibold text-primary mb-2">Productivity Insights</h3>
+              <ul className="space-y-2 text-sm text-secondary">
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-primary-600 rounded-full"></span>
+                  <span className="w-1.5 h-1.5 bg-purple-600 rounded-full"></span>
                   You're using AI tools {data?.aiUsage.totalGenerations || 0} times - great for productivity!
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-primary-600 rounded-full"></span>
+                  <span className="w-1.5 h-1.5 bg-purple-600 rounded-full"></span>
                   Your most productive tool: Outline Generator
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-primary-600 rounded-full"></span>
+                  <span className="w-1.5 h-1.5 bg-purple-600 rounded-full"></span>
                   {data && data.overview.totalProjects > 5
                     ? '🎉 You\'re building a great portfolio of products!'
+
+        {/* Enhanced Analytics Tabs */}
+        <div className="grid lg:grid-cols-3 gap-6 mt-8">
+          {/* Writing Performance */}
+          <div>
+            <WritingPerformanceMetrics />
+          </div>
+
+          {/* Milestones */}
+          <div>
+            <MilestonesTracker />
+          </div>
+
+          {/* Smart Insights */}
+          <div>
+            <SmartInsights />
+          </div>
+        </div>
                     : 'Tip: Create more projects to unlock deeper insights'}
                 </li>
               </ul>

@@ -65,7 +65,7 @@ export const SalesCopyGenerator = () => {
         />
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-primary mb-2">
             Product Type
           </label>
           <select
@@ -89,7 +89,7 @@ export const SalesCopyGenerator = () => {
         />
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-primary mb-2">
             Key Benefits (one per line)
           </label>
           <textarea
@@ -115,7 +115,7 @@ export const SalesCopyGenerator = () => {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-4" />
-            <p className="text-gray-600">Creating your sales copy...</p>
+            <p className="text-secondary">Creating your sales copy...</p>
           </div>
         </div>
       )}
@@ -126,7 +126,7 @@ export const SalesCopyGenerator = () => {
             {/* Headline */}
             <div className="card-flat">
               <div className="flex items-start justify-between mb-2">
-                <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide">
+                <h4 className="font-semibold text-primary text-sm uppercase tracking-wide">
                   Headline
                 </h4>
                 <Button
@@ -137,13 +137,13 @@ export const SalesCopyGenerator = () => {
                   <Copy size={16} />
                 </Button>
               </div>
-              <p className="text-2xl font-bold text-gray-900">{salesCopy.headline}</p>
+              <p className="text-2xl font-bold text-primary">{salesCopy.headline}</p>
             </div>
 
             {/* Subheadline */}
             <div className="card-flat">
               <div className="flex items-start justify-between mb-2">
-                <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide">
+                <h4 className="font-semibold text-primary text-sm uppercase tracking-wide">
                   Subheadline
                 </h4>
                 <Button
@@ -154,21 +154,21 @@ export const SalesCopyGenerator = () => {
                   <Copy size={16} />
                 </Button>
               </div>
-              <p className="text-lg text-gray-700">{salesCopy.subheadline}</p>
+              <p className="text-lg text-primary">{salesCopy.subheadline}</p>
             </div>
 
             {/* Benefits */}
             <div className="card-flat">
-              <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide mb-4">
+              <h4 className="font-semibold text-primary text-sm uppercase tracking-wide mb-4">
                 Key Benefits
               </h4>
               <div className="space-y-4">
                 {salesCopy.benefits.map((benefit, index) => (
                   <div key={index}>
-                    <h5 className="font-semibold text-gray-900 mb-1">
+                    <h5 className="font-semibold text-primary mb-1">
                       {benefit.title}
                     </h5>
-                    <p className="text-gray-600">{benefit.description}</p>
+                    <p className="text-secondary">{benefit.description}</p>
                   </div>
                 ))}
               </div>
@@ -177,10 +177,10 @@ export const SalesCopyGenerator = () => {
             {/* Features */}
             {salesCopy.features && salesCopy.features.length > 0 && (
               <div className="card-flat">
-                <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide mb-4">
+                <h4 className="font-semibold text-primary text-sm uppercase tracking-wide mb-4">
                   Features
                 </h4>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
+                <ul className="list-disc list-inside space-y-2 text-primary">
                   {salesCopy.features.map((feature, index) => (
                     <li key={index}>{feature}</li>
                   ))}

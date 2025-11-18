@@ -63,7 +63,7 @@ export const TitleGenerator = () => {
         />
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-primary mb-2">
             Product Type
           </label>
           <select
@@ -94,14 +94,14 @@ export const TitleGenerator = () => {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-4" />
-            <p className="text-gray-600">Generating title options...</p>
+            <p className="text-secondary">Generating title options...</p>
           </div>
         </div>
       )}
 
       {titles.length > 0 && !isLoading && (
         <div className="space-y-4">
-          <h3 className="font-semibold text-lg text-gray-900">Title Options</h3>
+          <h3 className="font-semibold text-lg text-primary">Title Options</h3>
 
           <div className="space-y-3">
             {titles.map((titleOption, index) => (
@@ -119,10 +119,10 @@ export const TitleGenerator = () => {
                         <Star className="w-4 h-4 text-warning-500 fill-warning-500" />
                       )}
                     </div>
-                    <h4 className="font-semibold text-gray-900 text-lg mb-1">
+                    <h4 className="font-semibold text-primary text-lg mb-1">
                       {titleOption.title}
                     </h4>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted">
                       Formula: {titleOption.formula}
                     </p>
                   </div>

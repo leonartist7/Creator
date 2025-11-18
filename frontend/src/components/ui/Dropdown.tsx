@@ -48,7 +48,7 @@ export const Dropdown = ({ trigger, children, align = 'left', className = '' }: 
 
       {isOpen && (
         <div
-          className={`absolute ${alignmentClasses[align]} mt-2 w-56 rounded-lg shadow-xl bg-surface-elevated border border-border-light z-50 animate-in`}
+          className={`absolute ${alignmentClasses[align]} mt-2 w-56 rounded-lg shadow-xl glass-strong border border-primary/20 z-50 animate-in`}
         >
           {children}
         </div>
@@ -78,10 +78,10 @@ export const DropdownItem = ({ children, onClick, icon, danger, disabled }: Drop
       disabled={disabled}
       className={`
         w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm
-        transition-colors first:rounded-t-lg last:rounded-b-lg
+        transition-all first:rounded-t-lg last:rounded-b-lg
         ${danger
           ? 'text-error-600 hover:bg-error-50'
-          : 'text-text-primary hover:bg-gray-100'
+          : 'text-primary hover:border-purple-500 hover:glow-sm'
         }
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
       `}
@@ -93,11 +93,11 @@ export const DropdownItem = ({ children, onClick, icon, danger, disabled }: Drop
 };
 
 export const DropdownDivider = () => (
-  <div className="my-1 border-t border-border-light" />
+  <div className="my-1 border-t border-primary/20" />
 );
 
 export const DropdownLabel = ({ children }: { children: ReactNode }) => (
-  <div className="px-4 py-2 text-xs font-semibold text-text-muted uppercase tracking-wider">
+  <div className="px-4 py-2 text-xs font-semibold text-muted uppercase tracking-wider">
     {children}
   </div>
 );
