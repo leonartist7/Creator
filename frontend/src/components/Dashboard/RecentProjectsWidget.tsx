@@ -100,17 +100,17 @@ export const RecentProjectsWidget = ({
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-center gap-2 text-xs text-secondary">
                 <FileText size={14} className="text-muted" />
-                <span>{getWordCount(project.content || '')} words</span>
+                <span>{getWordCount(project.content.text || project.content.html)} words</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-secondary">
                 <Clock size={14} className="text-muted" />
-                <span>{formatDate(project.updated_at)}</span>
+                <span>{formatDate(project.metadata.lastEdited.toString())}</span>
               </div>
             </div>
 
-            {project.tags && project.tags.length > 0 && (
+            {project.metadata.tags && project.metadata.tags.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-3">
-                {project.tags.slice(0, 3).map((tag, idx) => (
+                {project.metadata.tags.slice(0, 3).map((tag, idx) => (
                   <span
                     key={idx}
                     className="text-[10px] px-2 py-0.5 rounded bg-primary/10 text-primary"
@@ -118,9 +118,9 @@ export const RecentProjectsWidget = ({
                     {tag}
                   </span>
                 ))}
-                {project.tags.length > 3 && (
+                {project.metadata.tags.length > 3 && (
                   <span className="text-[10px] px-2 py-0.5 rounded bg-primary/10 text-primary">
-                    +{project.tags.length - 3}
+                    +{project.metadata.tags.length - 3}
                   </span>
                 )}
               </div>
@@ -131,7 +131,7 @@ export const RecentProjectsWidget = ({
                 <div className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-semibold text-white">
                   {(project.title || 'U')[0].toUpperCase()}
                 </div>
-                <span className="text-muted">Last edited {formatDate(project.updated_at)}</span>
+                <span className="text-muted">Last edited {formatDate(project.metadata.lastEdited.toString())}</span>
               </div>
               <Edit3 size={14} className="text-muted group-hover:text-purple-400 transition-colors" />
             </div>

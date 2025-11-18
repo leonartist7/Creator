@@ -13,7 +13,7 @@ import {
   ArrowRight,
   CheckCircle,
 } from 'lucide-react';
-import db from '../../utils/db';
+import { db } from '../../lib/storage/db';
 
 interface ProjectTemplatesModalProps {
   isOpen: boolean;
@@ -33,17 +33,28 @@ export const ProjectTemplatesModal = ({ isOpen, onClose }: ProjectTemplatesModal
 
     try {
       // Create new project with template content
+      const projectId = crypto.randomUUID();
+      const now = new Date();
+
       const newProject = {
+        id: projectId,
         title: selectedTemplate.name.replace(' Template', ''),
-        type: selectedTemplate.type,
-        content: selectedTemplate.content,
+        type: selectedTemplate.type as 'ebook' | 'course' | 'guide' | 'template' | 'workbook',
+        content: {
+          html: selectedTemplate.content,
+          text: selectedTemplate.content.replace(/<[^>]*>/g, ''),
+        },
+        metadata: {
+          wordCount: selectedTemplate.wordCount,
+          characterCount: selectedTemplate.content.length,
+          lastEdited: now,
+          created: now,
+          tags: [selectedTemplate.difficulty, selectedTemplate.type],
+        },
         status: 'draft' as const,
-        tags: [selectedTemplate.difficulty, selectedTemplate.type],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       };
 
-      const projectId = await db.projects.add(newProject);
+      await db.saveProject(newProject);
 
       success(
         'Project Created!',

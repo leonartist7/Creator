@@ -286,7 +286,6 @@ export const CommandPalette = ({ isOpen, onClose }: CommandPaletteProps) => {
       onClose={onClose}
       title=""
       size="md"
-      showCloseButton={false}
     >
       <div className="space-y-4">
         {/* Search Input */}

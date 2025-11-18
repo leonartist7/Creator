@@ -109,7 +109,7 @@ export const MilestonesTracker = ({
   const getCategoryBadgeColor = (category: Milestone['category']) => {
     const colors = {
       words: 'primary' as const,
-      projects: 'secondary' as const,
+      projects: 'primary' as const,
       streak: 'warning' as const,
       ai: 'success' as const,
       exports: 'gray' as const,

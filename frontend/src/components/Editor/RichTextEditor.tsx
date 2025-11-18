@@ -2,8 +2,8 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import CharacterCount from '@tiptap/extension-character-count';
-import Underline from '@tiptap/extension-underline';
-import TextAlign from '@tiptap/extension-text-align';
+// import Underline from '@tiptap/extension-underline'; // Disabled due to module conflict
+// import TextAlign from '@tiptap/extension-text-align'; // Disabled due to module conflict
 import Code from '@tiptap/extension-code';
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough as StrikethroughIcon,
@@ -26,22 +26,22 @@ export const RichTextEditor = ({ content, onChange, onAIAssist, onAITrigger }: R
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Underline,
+      // Underline, // Disabled due to module conflict
       Code,
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
+      // TextAlign.configure({ // Disabled due to module conflict
+      //   types: ['heading', 'paragraph'],
+      // }),
       Placeholder.configure({
-        placeholder: 'Start writing your masterpiece... (Use ++, >>, ??, //, @@ for AI assistance)',
+        placeholder: 'Start writing your masterpiece...',
       }),
       CharacterCount,
-      InlineAI.configure({
-        onTrigger: (task, text) => {
-          if (onAITrigger) {
-            onAITrigger(task as AITask, text);
-          }
-        },
-      }),
+      // InlineAI.configure({ // Disabled due to module conflict
+      //   onTrigger: (task, text) => {
+      //     if (onAITrigger) {
+      //       onAITrigger(task as AITask, text);
+      //     }
+      //   },
+      // }),
     ],
     content,
     onUpdate: ({ editor }) => {
@@ -98,13 +98,13 @@ export const RichTextEditor = ({ content, onChange, onAIAssist, onAITrigger }: R
           <Italic size={18} />
         </MenuButton>
 
-        <MenuButton
+        {/* <MenuButton
           onClick={() => editor.chain().focus().toggleUnderline().run()}
           active={editor.isActive('underline')}
           title="Underline (Ctrl+U)"
         >
           <UnderlineIcon size={18} />
-        </MenuButton>
+        </MenuButton> */}
 
         <MenuButton
           onClick={() => editor.chain().focus().toggleStrike().run()}
@@ -176,9 +176,9 @@ export const RichTextEditor = ({ content, onChange, onAIAssist, onAITrigger }: R
           <Quote size={18} />
         </MenuButton>
 
+        {/* Text Alignment - Disabled due to module conflict
         <div className="w-px h-6 bg-white/20 mx-1" />
 
-        {/* Text Alignment */}
         <MenuButton
           onClick={() => editor.chain().focus().setTextAlign('left').run()}
           active={editor.isActive({ textAlign: 'left' })}
@@ -212,6 +212,7 @@ export const RichTextEditor = ({ content, onChange, onAIAssist, onAITrigger }: R
         </MenuButton>
 
         <div className="w-px h-6 bg-white/20 mx-1" />
+        */}
 
         {/* Clear Formatting */}
         <MenuButton
