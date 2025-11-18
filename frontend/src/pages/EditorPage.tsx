@@ -23,6 +23,7 @@ import {
   Keyboard,
   ChevronDown,
   ChevronUp,
+  Target,
 } from 'lucide-react';
 import '../styles/glassmorphism.css';
 
@@ -44,6 +45,7 @@ export default function EditorPage() {
   const [charCount, setCharCount] = useState(0);
   const [isAIProcessing, setIsAIProcessing] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [wordGoal, setWordGoal] = useState(2000); // Default 2000 words goal
 
   useEffect(() => {
     const templateType = searchParams.get('type') as Project['type'];
@@ -374,6 +376,70 @@ export default function EditorPage() {
                       <div className="pt-2 border-t border-primary/10">
                         <p className="text-xs text-muted">
                           Last saved: {new Date(project.metadata.lastEdited).toLocaleString()}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+
+                {/* Word Goal Tracker */}
+                <Card className="glass-strong p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-primary flex items-center gap-2">
+                      <Target size={18} />
+                      Word Goal
+                    </h3>
+                    <input
+                      type="number"
+                      value={wordGoal}
+                      onChange={(e) => setWordGoal(Number(e.target.value))}
+                      className="w-20 text-sm px-2 py-1 rounded bg-primary/10 border border-primary/20 text-primary text-center"
+                      min="100"
+                      step="100"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    {/* Progress Bar */}
+                    <div className="relative h-3 bg-primary/10 rounded-full overflow-hidden">
+                      <div
+                        className="absolute top-0 left-0 h-full btn-gradient transition-all duration-500"
+                        style={{ width: `${Math.min((wordCount / wordGoal) * 100, 100)}%` }}
+                      />
+                    </div>
+
+                    {/* Stats */}
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-secondary">Progress</span>
+                      <span className="font-semibold text-primary">
+                        {wordCount.toLocaleString()} / {wordGoal.toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-secondary">Complete</span>
+                      <span className="font-semibold text-primary">
+                        {Math.round((wordCount / wordGoal) * 100)}%
+                      </span>
+                    </div>
+
+                    {/* Motivational Message */}
+                    {wordCount >= wordGoal ? (
+                      <div className="pt-3 border-t border-primary/10">
+                        <p className="text-xs text-success-600 font-medium">
+                          🎉 Goal achieved! Keep up the great work!
+                        </p>
+                      </div>
+                    ) : wordCount >= wordGoal * 0.75 ? (
+                      <div className="pt-3 border-t border-primary/10">
+                        <p className="text-xs text-secondary">
+                          Almost there! Just {(wordGoal - wordCount).toLocaleString()} more words.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="pt-3 border-t border-primary/10">
+                        <p className="text-xs text-muted">
+                          {(wordGoal - wordCount).toLocaleString()} words to go!
                         </p>
                       </div>
                     )}
