@@ -15,7 +15,7 @@ import {
   GraduationCap,
   FileType,
 } from 'lucide-react';
-import { useSettingsStore } from '../store/settingsStore';
+import { useSettingsStore } from '../stores/settingsStore';
 import '../styles/glassmorphism.css';
 
 interface Command {

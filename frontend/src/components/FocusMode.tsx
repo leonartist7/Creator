@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Play, Pause, RotateCcw, Target, Zap } from 'lucide-react';
-import { useSettingsStore } from '../store/settingsStore';
+import { useSettingsStore } from '../stores/settingsStore';
 import '../styles/glassmorphism.css';
 
 interface FocusModeProps {

@@ -1,4 +1,4 @@
-import { useSettingsStore } from '../store/settingsStore';
+import { useSettingsStore } from '../stores/settingsStore';
 import { useToast } from '../components/ui/Toast';
 
 export type AITask =
