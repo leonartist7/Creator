@@ -1,14 +1,22 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   Project,
   ProjectSection,
   TemplateId,
   AIGenerationRequest,
-} from '@/types/templates';
+  ContentVersion,
+  VersionHistory,
+  SmartSuggestion,
+  ContentAnalytics,
+} from '@/types/enhanced';
 import { getTemplate } from '@/config/templates';
 import { generateSectionContent, regenerateSectionContent } from '@/lib/ai/generator';
+import { autosaveService } from '@/lib/services/autosave';
+import { versionHistoryService } from '@/lib/services/versions';
+import { smartSuggestionsService } from '@/lib/services/suggestions';
+import { analyticsService } from '@/lib/services/analytics';
 
 /**
  * Hook for managing template-based projects
@@ -18,6 +26,54 @@ export function useTemplateProject() {
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [autosaveStatus, setAutosaveStatus] = useState<'saved' | 'saving' | 'error' | 'idle'>('idle');
+  const [lastSaved, setLastSaved] = useState<Date | undefined>();
+  const [versionHistory, setVersionHistory] = useState<VersionHistory[]>([]);
+  const [suggestions, setSuggestions] = useState<SmartSuggestion[]>([]);
+  const [analytics, setAnalytics] = useState<Map<string, ContentAnalytics>>(new Map());
+
+  const projectRef = useRef<Project | null>(null);
+
+  // Keep ref in sync with state for autosave callbacks
+  useEffect(() => {
+    projectRef.current = currentProject;
+  }, [currentProject]);
+
+  // Initialize autosave when project is loaded
+  useEffect(() => {
+    if (currentProject && currentProject.autosaveConfig?.enabled) {
+      const saveCallback = async (project: Project) => {
+        try {
+          setAutosaveStatus('saving');
+          // TODO: Save to Supabase/backend here
+          await new Promise(resolve => setTimeout(resolve, 500)); // Simulate save
+          setLastSaved(new Date());
+          setAutosaveStatus('saved');
+        } catch (error) {
+          console.error('[Autosave] Failed:', error);
+          setAutosaveStatus('error');
+        }
+      };
+
+      autosaveService.startAutosave(
+        currentProject.id,
+        saveCallback,
+        currentProject.autosaveConfig.intervalSeconds
+      );
+
+      return () => {
+        autosaveService.stopAutosave(currentProject.id);
+      };
+    }
+  }, [currentProject?.id, currentProject?.autosaveConfig?.enabled]);
+
+  // Update suggestions when project changes
+  useEffect(() => {
+    if (currentProject) {
+      const newSuggestions = smartSuggestionsService.generateSuggestions(currentProject);
+      setSuggestions(newSuggestions);
+    }
+  }, [currentProject]);
 
   /**
    * Create a new project from a template
@@ -196,6 +252,16 @@ export function useTemplateProject() {
    */
   const updateSectionContent = useCallback(
     (sectionId: string, content: string) => {
+      // Create version history entry
+      const version = versionHistoryService.createVersion(sectionId, content, 'user');
+      setVersionHistory((prev) =>
+        versionHistoryService.addVersion(prev, sectionId, version)
+      );
+
+      // Update analytics
+      const contentAnalytics = analyticsService.analyzeContent(content);
+      setAnalytics((prev) => new Map(prev).set(sectionId, contentAnalytics));
+
       updateSection(sectionId, {
         content,
         status: 'edited',
@@ -206,9 +272,118 @@ export function useTemplateProject() {
       });
 
       recalculateProjectMetadata();
+
+      // Trigger autosave if enabled
+      if (currentProject && currentProject.autosaveConfig?.enabled) {
+        autosaveService.triggerSave(currentProject.id, currentProject, async (project) => {
+          setAutosaveStatus('saving');
+          await new Promise(resolve => setTimeout(resolve, 500));
+          setLastSaved(new Date());
+          setAutosaveStatus('saved');
+        });
+      }
     },
-    []
+    [currentProject]
   );
+
+  /**
+   * Enable/disable autosave
+   */
+  const toggleAutosave = useCallback((enabled: boolean) => {
+    setCurrentProject((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        autosaveConfig: {
+          enabled,
+          intervalSeconds: prev.autosaveConfig?.intervalSeconds || 30,
+        },
+      };
+    });
+  }, []);
+
+  /**
+   * Save project immediately
+   */
+  const saveNow = useCallback(async () => {
+    if (!currentProject) return;
+
+    try {
+      setAutosaveStatus('saving');
+      await autosaveService.saveImmediately(currentProject.id, currentProject, async (project) => {
+        // TODO: Save to Supabase/backend
+        await new Promise(resolve => setTimeout(resolve, 500));
+      });
+      setLastSaved(new Date());
+      setAutosaveStatus('saved');
+    } catch (error) {
+      console.error('[Save] Failed:', error);
+      setAutosaveStatus('error');
+    }
+  }, [currentProject]);
+
+  /**
+   * Revert to a previous version
+   */
+  const revertToVersion = useCallback((sectionId: string, versionId: string) => {
+    const updatedHistory = versionHistoryService.revertToVersion(
+      versionHistory,
+      sectionId,
+      versionId
+    );
+
+    const revertedVersion = updatedHistory
+      .find((vh) => vh.sectionId === sectionId)
+      ?.versions.find((v) => v.id === versionId);
+
+    if (revertedVersion) {
+      updateSection(sectionId, {
+        content: revertedVersion.content,
+        status: 'edited',
+        metadata: {
+          wordCount: countWords(revertedVersion.content),
+          lastEditedAt: new Date(),
+        },
+      });
+      setVersionHistory(updatedHistory);
+    }
+  }, [versionHistory]);
+
+  /**
+   * Get versions for a specific section
+   */
+  const getSectionVersions = useCallback((sectionId: string): ContentVersion[] => {
+    return versionHistory.find((vh) => vh.sectionId === sectionId)?.versions || [];
+  }, [versionHistory]);
+
+  /**
+   * Get analytics for a specific section
+   */
+  const getSectionAnalytics = useCallback((sectionId: string): ContentAnalytics | undefined => {
+    return analytics.get(sectionId);
+  }, [analytics]);
+
+  /**
+   * Dismiss a suggestion
+   */
+  const dismissSuggestion = useCallback((suggestionId: string) => {
+    setSuggestions((prev) =>
+      smartSuggestionsService.dismissSuggestion(prev, suggestionId)
+    );
+  }, []);
+
+  /**
+   * Update global project settings
+   */
+  const updateGlobalSettings = useCallback((settings: Project['globalSettings']) => {
+    setCurrentProject((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        globalSettings: settings,
+      };
+    });
+  }, []);
 
   /**
    * Mark section as completed
@@ -277,15 +452,40 @@ export function useTemplateProject() {
   }
 
   return {
+    // Project state
     currentProject,
     projects,
     isGenerating,
+
+    // Autosave state
+    autosaveStatus,
+    lastSaved,
+
+    // Version history
+    versionHistory,
+    getSectionVersions,
+    revertToVersion,
+
+    // Smart suggestions
+    suggestions,
+    dismissSuggestion,
+
+    // Analytics
+    analytics,
+    getSectionAnalytics,
+
+    // Project actions
     createProject,
     generateSection,
     regenerateSection,
     updateSectionContent,
     markSectionComplete,
     generateAllSections,
+    updateGlobalSettings,
+
+    // Autosave actions
+    toggleAutosave,
+    saveNow,
   };
 }
 
