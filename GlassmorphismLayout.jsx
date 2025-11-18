@@ -20,7 +20,7 @@ export default function GlassmorphismLayout() {
             </div>
 
             {/* Background Color Picker */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 px-4 py-2 rounded-xl backdrop-blur-lg bg-white/10 border border-white/20 shadow-lg hover:bg-white/15 transition-all duration-300">
               <label htmlFor="bgPicker" className="text-white/90 text-sm font-medium">
                 Background
               </label>
@@ -29,7 +29,7 @@ export default function GlassmorphismLayout() {
                 type="color"
                 value={bgColor}
                 onChange={(e) => setBgColor(e.target.value)}
-                className="w-10 h-10 rounded-lg cursor-pointer border-2 border-white/20 hover:border-white/40 transition-colors"
+                className="w-10 h-10 rounded-lg cursor-pointer border-2 border-white/30 hover:border-white/50 transition-all duration-200 shadow-md"
               />
             </div>
           </div>
