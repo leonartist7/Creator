@@ -18,6 +18,12 @@ import {
   BarChart3,
   PieChart as PieChartIcon,
 } from 'lucide-react';
+  Award,
+  Target,
+  Lightbulb,
+import { WritingPerformanceMetrics } from '../components/Analytics/WritingPerformanceMetrics';
+import { MilestonesTracker } from '../components/Analytics/MilestonesTracker';
+import { SmartInsights } from '../components/Analytics/SmartInsights';
 
 interface DashboardData {
   overview: {
@@ -326,6 +332,24 @@ export default function AnalyticsPage() {
                   <span className="w-1.5 h-1.5 bg-purple-600 rounded-full"></span>
                   {data && data.overview.totalProjects > 5
                     ? '🎉 You\'re building a great portfolio of products!'
+
+        {/* Enhanced Analytics Tabs */}
+        <div className="grid lg:grid-cols-3 gap-6 mt-8">
+          {/* Writing Performance */}
+          <div>
+            <WritingPerformanceMetrics />
+          </div>
+
+          {/* Milestones */}
+          <div>
+            <MilestonesTracker />
+          </div>
+
+          {/* Smart Insights */}
+          <div>
+            <SmartInsights />
+          </div>
+        </div>
                     : 'Tip: Create more projects to unlock deeper insights'}
                 </li>
               </ul>
