@@ -69,7 +69,7 @@ This project follows **Spec-Driven Development** guided by a strict constitution
 
 ### Critical Gaps 🔴
 
-1. **NO TEST SUITE** - Violates Article VII (Test-First - NON-NEGOTIABLE)
+1. ~~**NO TEST SUITE**~~ ✅ **FIXED** - Testing infrastructure complete (Vitest + Playwright + Supertest)
 2. **NO MASTERWORK SYSTEM** - Violates Article I (Master-First - core vision)
 3. **NO MULTI-MEDIA SUPPORT** - Violates Article IV (vision requires text + visual + cinematic)
 4. **NOT LIBRARY-FIRST** - Violates Article VI (tightly coupled architecture)
@@ -153,7 +153,10 @@ We're following a **spec-driven development roadmap** to achieve the full vision
 - **Backend**: Node.js with Express, TypeScript
 - **Database**: PostgreSQL (primary), MongoDB (planned for masterworks)
 - **AI**: OpenAI (GPT-4), Anthropic (Claude)
-- **Testing**: Vitest (unit), Playwright (E2E), Supertest (API) - **in progress**
+- **Testing**: Vitest (unit), Playwright (E2E), Supertest (API) ✅ **Complete**
+  - 80% minimum code coverage enforced
+  - TDD workflow mandatory (Article VII)
+  - CI/CD pipeline with GitHub Actions
 
 ### Forbidden Patterns
 
@@ -172,12 +175,19 @@ See constitution for rationale.
 Creator/
 ├── README.md                          # This file - project overview
 ├── ROADMAP.md                         # Development roadmap
+├── docs/
+│   └── TESTING.md                     # ⭐ Testing guide (TDD workflow, best practices)
 ├── .specify/
 │   ├── memory/
 │   │   └── constitution.md           # Project constitution (READ THIS FIRST)
 │   ├── specs/                         # Feature specifications (created by /speckit.specify)
 │   ├── templates/                     # Spec templates
 │   └── scripts/                       # Automation scripts
+├── tests/
+│   ├── unit/                          # Unit tests (services, controllers, components)
+│   ├── integration/                   # Integration tests (API endpoints)
+│   ├── e2e/                           # End-to-end tests (user workflows)
+│   └── fixtures/                      # Shared test data
 ├── legacy-docs/
 │   ├── README.md                      # Archive explanation
 │   ├── FEATURE_INVENTORY.md          # What exists vs. what's planned
@@ -225,20 +235,45 @@ This project uses **Spec-Driven Development** with the following commands:
 
 ---
 
-## 🧪 Testing (Phase 0 - In Progress)
+## 🧪 Testing
 
-**Current Status**: ❌ NO TESTS (constitutional violation)
+**Status**: ✅ **Complete** - Constitutional compliance achieved (Article VII)
 
-**Target**: >80% code coverage with comprehensive test suite
+**Coverage**: 80% minimum enforced across all code
 
-### Planned Testing Stack
+### Testing Stack
 
-- **Vitest**: Unit tests for libraries and utilities
-- **Playwright**: End-to-end testing for user workflows
-- **Supertest**: API endpoint testing
-- **CI/CD**: Automated test pipeline (GitHub Actions)
+- **Vitest** v4.0.10: Unit & integration tests
+- **Playwright** v1.56.1: End-to-end browser testing
+- **Supertest** v7.1.4: API endpoint testing
+- **CI/CD**: GitHub Actions pipeline (runs on every push)
 
-**First spec to create**: Testing infrastructure (see ROADMAP.md Phase 0)
+### Running Tests
+
+```bash
+# Unit tests
+npm test                    # Run once
+npm run test:watch          # Watch mode
+npm run test:coverage       # With coverage report
+npm run test:ui             # Open Vitest UI
+
+# Integration tests
+npm run test:integration    # API endpoint tests
+
+# E2E tests
+npm run test:e2e            # Run Playwright tests
+npm run test:e2e:ui         # Open Playwright UI
+```
+
+### TDD Workflow (Mandatory)
+
+Following Article VII, all features MUST use Test-Driven Development:
+
+1. **RED**: Write failing tests first
+2. **GREEN**: Implement minimum code to pass
+3. **REFACTOR**: Improve code while keeping tests green
+
+📖 **Full Guide**: [`docs/TESTING.md`](docs/TESTING.md) - Comprehensive testing documentation
 
 ---
 

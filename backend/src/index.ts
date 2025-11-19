@@ -10,6 +10,8 @@ import projectRoutes from './routes/project.routes';
 import aiRoutes from './routes/ai.routes';
 import exportRoutes from './routes/export.routes';
 import analyticsRoutes from './routes/analytics.routes';
+import masterworkRoutes from './routes/masterwork.routes';
+import aiStyleRoutes from './routes/ai-style.routes';
 import { errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
@@ -53,6 +55,8 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/masterworks', masterworkRoutes);
+app.use('/api/ai-studio', aiStyleRoutes);
 
 // Error handling
 app.use(errorHandler);

@@ -1,0 +1,644 @@
+openapi: 3.0.3
+info:
+  title: Knowledge Vault API
+  description: API for uploading masterworks and extracting style DNA
+  version: 1.0.0
+  contact:
+    name: Creative Mastery Platform
+
+servers:
+  - url: http://localhost:3001/api
+    description: Development server
+  - url: https://api.creativemastery.com/api
+    description: Production server
+
+tags:
+  - name: Masterworks
+    description: Upload and manage masterwork documents
+  - name: Library
+    description: Browse and search masterwork collection
+  - name: Style Profiles
+    description: Style DNA analysis and profiles
+  - name: Search
+    description: Full-text search across masterworks
+
+paths:
+  /masterworks/upload:
+    post:
+      tags: [Masterworks]
+      summary: Upload a new masterwork document
+      description: Upload PDF, EPUB, DOCX, TXT, or MD file
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Document file (max 50MB)
+                title:
+                  type: string
+                  description: Optional title (extracted if not provided)
+                author:
+                  type: string
+                  description: Optional author name
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  description: Custom tags for organization
+      responses:
+        '201':
+          description: Upload started successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '400':
+          description: Invalid file or parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: File too large (>50MB)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /masterworks:
+    get:
+      tags: [Library]
+      summary: List all masterworks for current user
+      description: Paginated list with sorting and filtering
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [title, author, upload_date, word_count]
+            default: upload_date
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: tag
+          in: query
+          schema:
+            type: string
+          description: Filter by tag
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [PDF, EPUB, DOCX, TXT, MD]
+          description: Filter by format
+      responses:
+        '200':
+          description: List of masterworks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  masterworks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Masterwork'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /masterworks/{id}:
+    get:
+      tags: [Masterworks]
+      summary: Get masterwork details
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/MasterworkId'
+      responses:
+        '200':
+          description: Masterwork details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MasterworkDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    patch:
+      tags: [Masterworks]
+      summary: Update masterwork metadata
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/MasterworkId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                author:
+                  type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+                notes:
+                  type: string
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+      responses:
+        '200':
+          description: Updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Masterwork'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      tags: [Masterworks]
+      summary: Delete a masterwork
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/MasterworkId'
+      responses:
+        '204':
+          description: Deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /masterworks/{id}/analyze:
+    post:
+      tags: [Style Profiles]
+      summary: Start style DNA analysis
+      description: Initiates background job to analyze writing style
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/MasterworkId'
+      responses:
+        '202':
+          description: Analysis started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Style analysis started"
+                  jobId:
+                    type: string
+                    format: uuid
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Analysis already in progress
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /masterworks/{id}/style-profile:
+    get:
+      tags: [Style Profiles]
+      summary: Get style DNA profile
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/MasterworkId'
+      responses:
+        '200':
+          description: Style profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StyleProfile'
+        '404':
+          description: Profile not found (analysis not complete)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /masterworks/search:
+    get:
+      tags: [Search]
+      summary: Search across all masterworks
+      description: Full-text search with highlighting
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Search query
+        - name: masterwork_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Limit search to specific masterwork
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SearchResult'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  query:
+                    type: string
+        '400':
+          description: Invalid query
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /masterworks/{id}/compare:
+    get:
+      tags: [Style Profiles]
+      summary: Compare style profiles
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/MasterworkId'
+        - name: compareWith
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of masterwork to compare with
+      responses:
+        '200':
+          description: Comparison results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StyleComparison'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /uploads/{id}/status:
+    get:
+      tags: [Masterworks]
+      summary: Get upload progress
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Upload status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadStatus'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    MasterworkId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Masterwork UUID
+
+  schemas:
+    Masterwork:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        author:
+          type: string
+          nullable: true
+        format:
+          type: string
+          enum: [PDF, EPUB, DOCX, TXT, MD]
+        fileSize:
+          type: integer
+          description: Size in bytes
+        coverImageUrl:
+          type: string
+          nullable: true
+        wordCount:
+          type: integer
+        pageCount:
+          type: integer
+          nullable: true
+        language:
+          type: string
+        customTags:
+          type: array
+          items:
+            type: string
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+        extractionStatus:
+          type: string
+          enum: [pending, processing, completed, failed]
+        analysisStatus:
+          type: string
+          enum: [not_started, processing, completed, failed]
+        uploadDate:
+          type: string
+          format: date-time
+        hasStyleProfile:
+          type: boolean
+
+    MasterworkDetail:
+      allOf:
+        - $ref: '#/components/schemas/Masterwork'
+        - type: object
+          properties:
+            userNotes:
+              type: string
+              nullable: true
+            publicationDate:
+              type: string
+              format: date
+              nullable: true
+            isbn:
+              type: string
+              nullable: true
+            lastAccessed:
+              type: string
+              format: date-time
+
+    StyleProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        masterworkId:
+          type: string
+          format: uuid
+        avgSentenceLength:
+          type: number
+        sentenceLengthVariance:
+          type: number
+        vocabComplexity:
+          type: number
+          description: 0-100 score
+        uniqueWordRatio:
+          type: number
+        avgParagraphLength:
+          type: number
+        dialogueRatio:
+          type: number
+          description: Percentage (0-100)
+        fleschReadingEase:
+          type: number
+        fleschKincaidGrade:
+          type: number
+        toneScore:
+          type: number
+          description: -1 (formal) to 1 (conversational)
+        sentimentScore:
+          type: number
+          description: -1 (negative) to 1 (positive)
+        topWords:
+          type: object
+          additionalProperties:
+            type: integer
+        topPhrases:
+          type: object
+          additionalProperties:
+            type: integer
+        confidenceScore:
+          type: integer
+          description: 0-100
+        analysisDate:
+          type: string
+          format: date-time
+
+    SearchResult:
+      type: object
+      properties:
+        masterworkId:
+          type: string
+          format: uuid
+        masterworkTitle:
+          type: string
+        author:
+          type: string
+        chunkId:
+          type: string
+          format: uuid
+        snippet:
+          type: string
+          description: Text excerpt with search term highlighted
+        pageNumber:
+          type: integer
+          nullable: true
+        locationReference:
+          type: string
+          nullable: true
+        relevanceScore:
+          type: number
+          description: 0-1 ranking score
+
+    StyleComparison:
+      type: object
+      properties:
+        masterwork1:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            title:
+              type: string
+            author:
+              type: string
+        masterwork2:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            title:
+              type: string
+            author:
+              type: string
+        similarities:
+          type: object
+          properties:
+            sentenceLengthDiff:
+              type: number
+              description: Percentage difference
+            vocabOverlap:
+              type: number
+              description: Percentage of shared vocabulary
+            toneAlignment:
+              type: number
+              description: Similarity score 0-1
+        differences:
+          type: array
+          items:
+            type: object
+            properties:
+              metric:
+                type: string
+              masterwork1Value:
+                type: number
+              masterwork2Value:
+                type: number
+              percentageDiff:
+                type: number
+
+    UploadResponse:
+      type: object
+      properties:
+        uploadId:
+          type: string
+          format: uuid
+        message:
+          type: string
+        status:
+          type: string
+          enum: [uploading, processing]
+
+    UploadStatus:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fileName:
+          type: string
+        fileSize:
+          type: integer
+        status:
+          type: string
+          enum: [uploading, processing, complete, failed]
+        progressPercentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+        errorMessage:
+          type: string
+          nullable: true
+        masterworkId:
+          type: string
+          format: uuid
+          nullable: true
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          nullable: true
+
+  responses:
+    Unauthorized:
+      description: Unauthorized - invalid or missing token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

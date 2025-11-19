@@ -49,3 +49,7 @@ temp/
 
 # AI Agent folders (may contain credentials)
 .claude/
+
+# Knowledge Vault uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
