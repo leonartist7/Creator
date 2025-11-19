@@ -2,7 +2,7 @@
 // Phase 5 Implementation - T069-T078
 
 import fs from 'fs/promises';
-import pdfParse from 'pdf-parse';
+const pdfParse = require('pdf-parse');
 import EPub from 'epub';
 import mammoth from 'mammoth';
 import { TextChunk, CreateTextChunkInput, TextChunkValidator } from '../models/TextChunk';

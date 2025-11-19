@@ -46,9 +46,15 @@ export interface CreateMasterworkInput {
   format: FileFormat;
   fileSize: number;
   filePath: string;
+  coverImageUrl?: string;
+  pageCount?: number;
   wordCount?: number;
   language?: string;
+  publicationDate?: Date;
+  isbn?: string;
   customTags?: string[];
+  userNotes?: string;
+  rating?: number;
 }
 
 export interface UpdateMasterworkInput {

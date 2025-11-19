@@ -3,7 +3,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import pdfParse from 'pdf-parse';
+const pdfParse = require('pdf-parse');
 import EPub from 'epub';
 import mammoth from 'mammoth';
 
@@ -113,7 +113,7 @@ export class MetadataExtractor {
               wordCount,
               language: epub.metadata.language || undefined,
               publicationDate,
-              isbn: epub.metadata.ISBN || undefined,
+              isbn: (epub.metadata as any).ISBN || (epub.metadata as any).isbn || undefined,
               format: 'EPUB'
             });
           } catch (err) {
