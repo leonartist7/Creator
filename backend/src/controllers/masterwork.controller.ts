@@ -8,6 +8,7 @@ import { metadataExtractor } from '../utils/metadata-extractor';
 import { getStorage } from '../utils/file-storage';
 import { addTextExtractionJob, addStyleAnalysisJob } from '../config/bull';
 import { styleAnalysisService } from '../services/style-analysis.service';
+import { searchService } from '../services/search.service';
 import fs from 'fs/promises';
 
 export class MasterworkController {
@@ -423,12 +424,27 @@ export class MasterworkController {
 
   /**
    * POST /api/masterworks/search - Search across masterworks
+   * T119: Full-text search endpoint
    */
   async searchMasterworks(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      res.status(501).json({
-        message: 'Search not implemented yet (US5)'
+      const { query, masterworkIds, limit, offset } = req.body;
+
+      if (!query || query.trim().length === 0) {
+        res.status(400).json({
+          message: 'Search query is required'
+        });
+        return;
+      }
+
+      const searchResult = await searchService.search({
+        query,
+        masterworkIds,
+        limit: limit || 20,
+        offset: offset || 0
       });
+
+      res.status(200).json(searchResult);
     } catch (error) {
       next(error);
     }
