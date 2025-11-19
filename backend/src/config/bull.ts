@@ -262,8 +262,19 @@ export function registerJobProcessors(): void {
     console.error('Failed to register text extraction processor:', err);
   });
 
-  // Style analysis processor will be registered in Phase 6
-  console.log('Note: Style analysis processor not yet implemented (Phase 6)');
+  // Style analysis processor
+  import('../jobs/analyzeStyle.job').then(({ processStyleAnalysis, analyzeStyleJobHandlers }) => {
+    styleAnalysisQueue.process(processStyleAnalysis);
+
+    styleAnalysisQueue.on('completed', analyzeStyleJobHandlers.onCompleted);
+    styleAnalysisQueue.on('failed', analyzeStyleJobHandlers.onFailed);
+    styleAnalysisQueue.on('progress', analyzeStyleJobHandlers.onProgress);
+    styleAnalysisQueue.on('active', analyzeStyleJobHandlers.onActive);
+
+    console.log('✓ Style analysis job processor registered');
+  }).catch(err => {
+    console.error('Failed to register style analysis processor:', err);
+  });
 
   // Cleanup processor (simple implementation)
   cleanupQueue.process(async (job) => {

@@ -6,7 +6,8 @@ import { uploadService } from '../services/upload.service';
 import { masterworkService } from '../services/masterwork.service';
 import { metadataExtractor } from '../utils/metadata-extractor';
 import { getStorage } from '../utils/file-storage';
-import { addTextExtractionJob } from '../config/bull';
+import { addTextExtractionJob, addStyleAnalysisJob } from '../config/bull';
+import { styleAnalysisService } from '../services/style-analysis.service';
 import fs from 'fs/promises';
 
 export class MasterworkController {
@@ -332,11 +333,39 @@ export class MasterworkController {
 
   /**
    * POST /api/masterworks/:id/analyze - Trigger style analysis
+   * T104: Start style DNA analysis
    */
   async triggerAnalysis(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      res.status(501).json({
-        message: 'Style analysis not implemented yet (US4)'
+      const { id } = req.params;
+
+      const masterwork = await masterworkService.getMasterworkById(id);
+
+      if (!masterwork) {
+        res.status(404).json({
+          message: 'Masterwork not found'
+        });
+        return;
+      }
+
+      // Check if text has been extracted
+      if (masterwork.extractionStatus !== 'completed') {
+        res.status(400).json({
+          message: 'Text extraction must be completed before style analysis',
+          extractionStatus: masterwork.extractionStatus
+        });
+        return;
+      }
+
+      // Queue style analysis job
+      const job = await addStyleAnalysisJob({
+        masterworkId: masterwork.id,
+        userId: masterwork.userId
+      });
+
+      res.status(200).json({
+        message: 'Style analysis started',
+        jobId: job.id
       });
     } catch (error) {
       next(error);
@@ -345,11 +374,34 @@ export class MasterworkController {
 
   /**
    * GET /api/masterworks/:id/style - Get style profile
+   * T105: Retrieve style DNA profile
    */
   async getStyleProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      res.status(501).json({
-        message: 'Style profile retrieval not implemented yet (US4)'
+      const { id } = req.params;
+
+      const masterwork = await masterworkService.getMasterworkById(id);
+
+      if (!masterwork) {
+        res.status(404).json({
+          message: 'Masterwork not found'
+        });
+        return;
+      }
+
+      // Get style profile
+      const styleProfile = await styleAnalysisService.getStyleProfile(id);
+
+      if (!styleProfile) {
+        res.status(404).json({
+          message: 'Style profile not found. Run analysis first.',
+          analysisStatus: masterwork.analysisStatus
+        });
+        return;
+      }
+
+      res.status(200).json({
+        styleProfile
       });
     } catch (error) {
       next(error);
