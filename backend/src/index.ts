@@ -60,24 +60,16 @@ app.use(errorHandler);
 // Test Supabase connection and start server
 const startServer = async () => {
   try {
-    // Test Supabase connection
-    const { data, error } = await supabase.from('user_profiles').select('count').limit(1);
-
-    if (error) {
-      console.warn('⚠️  Supabase connection warning:', error.message);
-      console.log('💡 Make sure to run the SQL schema in your Supabase dashboard');
-    } else {
-      console.log('✅ Supabase connection established successfully');
+    // Silently test Supabase connection if configured
+    if (supabase) {
+      await supabase.from('user_profiles').select('count').limit(1);
     }
 
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🔗 Supabase URL: ${process.env.SUPABASE_URL}`);
-      console.log(`🤖 Anthropic API: ${process.env.ANTHROPIC_API_KEY ? 'configured' : 'NOT configured'}`);
+      console.log(`Server: http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error('❌ Unable to start server:', error);
+    console.error('Server error:', error);
     process.exit(1);
   }
 };
