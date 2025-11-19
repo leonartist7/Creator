@@ -46,3 +46,6 @@ Thumbs.db
 # Uploads
 uploads/
 temp/
+
+# AI Agent folders (may contain credentials)
+.claude/
