@@ -15,6 +15,7 @@ import {
   MasterworkUploadValidator
 } from '../models/MasterworkUpload';
 import { getStorage } from '../utils/file-storage';
+import { inMemoryStore } from '../data/in-memory-store';
 
 export interface CreateMasterworkFromUploadInput {
   userId: string;
@@ -73,8 +74,8 @@ export class MasterworkService {
       updatedAt: now
     };
 
-    // TODO: Save to database in database implementation phase
-    // For now, return the created object
+    // Save to in-memory store
+    inMemoryStore.saveMasterwork(masterwork);
     return masterwork;
   }
 
@@ -88,22 +89,25 @@ export class MasterworkService {
       throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
     }
 
-    // TODO: Fetch existing masterwork from database
-    // TODO: Merge updates and save
-    // For now, throw not implemented error
-    throw new Error('Not implemented yet - database integration pending');
+    // Update in store
+    const updated = inMemoryStore.updateMasterwork(id, input);
+    if (!updated) {
+      throw new Error('Masterwork not found');
+    }
+
+    return updated;
   }
 
   /**
    * Get masterwork by ID
    */
   async getMasterworkById(id: string): Promise<Masterwork | null> {
-    // TODO: Fetch from database
-    throw new Error('Not implemented yet - database integration pending');
+    return inMemoryStore.getMasterwork(id);
   }
 
   /**
    * List masterworks for a user
+   * T051: Pagination, T052: Sorting, T053: Filtering
    */
   async listMasterworks(userId: string, options?: {
     page?: number;
@@ -116,26 +120,119 @@ export class MasterworkService {
       tags?: string[];
     };
   }): Promise<{ masterworks: Masterwork[]; total: number }> {
-    // TODO: Fetch from database with pagination and filters
-    throw new Error('Not implemented yet - database integration pending');
+    let masterworks = inMemoryStore.listMasterworks(userId);
+
+    // T053: Apply filters
+    if (options?.filters) {
+      if (options.filters.format) {
+        masterworks = masterworks.filter(m => m.format === options.filters!.format);
+      }
+
+      if (options.filters.analysisStatus) {
+        masterworks = masterworks.filter(m => m.analysisStatus === options.filters!.analysisStatus);
+      }
+
+      if (options.filters.tags && options.filters.tags.length > 0) {
+        masterworks = masterworks.filter(m =>
+          options.filters!.tags!.some(tag => m.customTags.includes(tag))
+        );
+      }
+    }
+
+    const total = masterworks.length;
+
+    // T052: Apply sorting
+    const sortBy = options?.sortBy || 'uploadDate';
+    const sortOrder = options?.sortOrder || 'desc';
+
+    masterworks.sort((a, b) => {
+      let aVal: any;
+      let bVal: any;
+
+      switch (sortBy) {
+        case 'title':
+          aVal = a.title.toLowerCase();
+          bVal = b.title.toLowerCase();
+          break;
+        case 'author':
+          aVal = (a.author || '').toLowerCase();
+          bVal = (b.author || '').toLowerCase();
+          break;
+        case 'uploadDate':
+          aVal = a.uploadDate.getTime();
+          bVal = b.uploadDate.getTime();
+          break;
+        case 'wordCount':
+          aVal = a.wordCount;
+          bVal = b.wordCount;
+          break;
+        case 'rating':
+          aVal = a.rating || 0;
+          bVal = b.rating || 0;
+          break;
+        default:
+          aVal = a.uploadDate.getTime();
+          bVal = b.uploadDate.getTime();
+      }
+
+      if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    // T051: Apply pagination
+    const page = options?.page || 1;
+    const pageSize = options?.pageSize || 20;
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+
+    const paginatedMasterworks = masterworks.slice(startIndex, endIndex);
+
+    return {
+      masterworks: paginatedMasterworks,
+      total
+    };
   }
 
   /**
    * Delete a masterwork
+   * T056: Delete endpoint with file cleanup
    */
   async deleteMasterwork(id: string): Promise<void> {
-    // TODO: Fetch masterwork from database
-    // TODO: Delete associated file from storage
-    // TODO: Delete database record
-    throw new Error('Not implemented yet - database integration pending');
+    const masterwork = inMemoryStore.getMasterwork(id);
+    if (!masterwork) {
+      throw new Error('Masterwork not found');
+    }
+
+    // Delete associated file from storage
+    try {
+      const storage = getStorage();
+      await storage.delete(masterwork.filePath);
+    } catch (error) {
+      console.error('Failed to delete file from storage:', error);
+      // Continue with deletion even if file delete fails
+    }
+
+    // Delete from store
+    const deleted = inMemoryStore.deleteMasterwork(id);
+    if (!deleted) {
+      throw new Error('Failed to delete masterwork');
+    }
   }
 
   /**
    * Update last accessed timestamp
+   * T054: Detail view with access tracking
    */
   async updateLastAccessed(id: string): Promise<void> {
-    // TODO: Update database record
-    throw new Error('Not implemented yet - database integration pending');
+    const masterwork = inMemoryStore.getMasterwork(id);
+    if (!masterwork) {
+      return; // Silently fail if not found
+    }
+
+    inMemoryStore.updateMasterwork(id, {
+      lastAccessed: new Date()
+    });
   }
 
   /**
@@ -164,7 +261,8 @@ export class MasterworkService {
       updatedAt: now
     };
 
-    // TODO: Save to database
+    // Save to in-memory store
+    inMemoryStore.saveUpload(upload);
     return upload;
   }
 
@@ -181,16 +279,20 @@ export class MasterworkService {
       throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
     }
 
-    // TODO: Fetch from database, update, and save
-    throw new Error('Not implemented yet - database integration pending');
+    // Update in store
+    const updated = inMemoryStore.updateUpload(id, input);
+    if (!updated) {
+      throw new Error('Upload tracking record not found');
+    }
+
+    return updated;
   }
 
   /**
    * Get upload tracking by ID
    */
   async getUploadTracking(id: string): Promise<MasterworkUpload | null> {
-    // TODO: Fetch from database
-    throw new Error('Not implemented yet - database integration pending');
+    return inMemoryStore.getUpload(id);
   }
 
   /**
