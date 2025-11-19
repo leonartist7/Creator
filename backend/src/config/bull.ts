@@ -239,3 +239,39 @@ export async function cleanAllQueues(grace: number = 0): Promise<void> {
   await Promise.all(promises);
   console.log('All queues cleaned');
 }
+
+/**
+ * Register job processors for all queues
+ */
+export function registerJobProcessors(): void {
+  const textExtractionQueue = getTextExtractionQueue();
+  const styleAnalysisQueue = getStyleAnalysisQueue();
+  const cleanupQueue = getCleanupQueue();
+
+  // Import job processors dynamically to avoid circular dependencies
+  import('../jobs/extractText.job').then(({ processTextExtraction, extractTextJobHandlers }) => {
+    textExtractionQueue.process(processTextExtraction);
+
+    textExtractionQueue.on('completed', extractTextJobHandlers.onCompleted);
+    textExtractionQueue.on('failed', extractTextJobHandlers.onFailed);
+    textExtractionQueue.on('progress', extractTextJobHandlers.onProgress);
+    textExtractionQueue.on('active', extractTextJobHandlers.onActive);
+
+    console.log('✓ Text extraction job processor registered');
+  }).catch(err => {
+    console.error('Failed to register text extraction processor:', err);
+  });
+
+  // Style analysis processor will be registered in Phase 6
+  console.log('Note: Style analysis processor not yet implemented (Phase 6)');
+
+  // Cleanup processor (simple implementation)
+  cleanupQueue.process(async (job) => {
+    const { filePath } = job.data;
+    console.log(`Cleanup job ${job.id}: Removing ${filePath}`);
+    // TODO: Implement file cleanup
+    return { cleaned: filePath };
+  });
+
+  console.log('✓ Job processors registered');
+}
