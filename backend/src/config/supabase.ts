@@ -10,11 +10,12 @@ const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
 // Check if Supabase is configured
 const isSupabaseConfigured = supabaseUrl && supabaseServiceKey;
 
-if (!isSupabaseConfigured) {
-  console.warn('⚠️  Supabase environment variables not configured. Running without database.');
-  console.warn('   The app will work with frontend-only features (AI tools, local storage).');
-  console.warn('   To enable backend features, add Supabase credentials to backend/.env');
-}
+// Supabase warnings disabled for cleaner logs
+// if (!isSupabaseConfigured) {
+//   console.warn('⚠️  Supabase environment variables not configured. Running without database.');
+//   console.warn('   The app will work with frontend-only features (AI tools, local storage).');
+//   console.warn('   To enable backend features, add Supabase credentials to backend/.env');
+// }
 
 // Create clients only if configured, otherwise export null
 export const supabase = isSupabaseConfigured

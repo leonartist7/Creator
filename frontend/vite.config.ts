@@ -4,6 +4,8 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  logLevel: 'error', // Only show errors, no info/warn
+  clearScreen: false, // Don't clear screen on HMR
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -11,6 +13,9 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    hmr: {
+      overlay: false, // Disable error overlay
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:3001',

@@ -8,6 +8,12 @@ import { convert as htmlToText } from 'html-to-text';
 
 const Epub = require('epub-gen');
 
+// Define ProjectContent interface locally
+interface ProjectContent {
+  html?: string;
+  [key: string]: any;
+}
+
 // Helper function to strip HTML tags and convert to plain text
 const stripHtml = (html: string): string => {
   return htmlToText(html, {
@@ -75,7 +81,7 @@ export const exportToPDF = async (
     doc.moveDown(2);
 
     // Add content
-    const content = project.content?.html || '';
+    const content = (project.content as ProjectContent)?.html || '';
     const plainText = stripHtml(content);
 
     doc
@@ -115,7 +121,7 @@ export const exportToEPUB = async (
       throw createError('Project not found', 404);
     }
 
-    const content = project.content?.html || '<p>No content available.</p>';
+    const content = (project.content as ProjectContent)?.html || '<p>No content available.</p>';
 
     // Configure EPUB
     const option = {
@@ -170,7 +176,7 @@ export const exportToDOCX = async (
       throw createError('Project not found', 404);
     }
 
-    const content = project.content?.html || '';
+    const content = (project.content as ProjectContent)?.html || '';
     const plainText = stripHtml(content);
 
     // Split content into paragraphs

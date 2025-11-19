@@ -5,12 +5,17 @@ import User from './User';
 export type ProjectType = 'ebook' | 'course' | 'guide' | 'template' | 'workbook';
 export type ProjectStatus = 'draft' | 'in_progress' | 'completed' | 'published';
 
+export interface ProjectContent {
+  html?: string;
+  [key: string]: any;
+}
+
 interface ProjectAttributes {
   id: string;
   userId: string;
   title: string;
   type: ProjectType;
-  content: object;
+  content: ProjectContent;
   metadata: object;
   status: ProjectStatus;
   createdAt?: Date;
@@ -24,7 +29,7 @@ class Project extends Model<ProjectAttributes, ProjectCreationAttributes> implem
   public userId!: string;
   public title!: string;
   public type!: ProjectType;
-  public content!: object;
+  public content!: ProjectContent;
   public metadata!: object;
   public status!: ProjectStatus;
   public readonly createdAt!: Date;
