@@ -69,6 +69,50 @@ ${text}
 Return only the improved version while maintaining the original meaning and tone.`,
 };
 
+/**
+ * Sleep helper for retry delays
+ */
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Retry wrapper with exponential backoff
+ */
+const retryWithBackoff = async <T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  initialDelay: number = 1000
+): Promise<T> => {
+  let lastError: any;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+
+      // Check if it's a retryable error (529 Overloaded, 529, or rate limit)
+      const isRetryable =
+        error.status === 529 ||
+        error.message?.includes('overloaded') ||
+        error.message?.includes('Overloaded') ||
+        error.status === 429;
+
+      // Don't retry on last attempt or non-retryable errors
+      if (attempt === maxRetries || !isRetryable) {
+        break;
+      }
+
+      // Calculate delay with exponential backoff
+      const delay = initialDelay * Math.pow(2, attempt);
+      console.log(`Anthropic API overloaded (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${delay}ms...`);
+
+      await sleep(delay);
+    }
+  }
+
+  throw lastError;
+};
+
 export const generateWithClaude = async (
   prompt: string,
   options: {
@@ -76,52 +120,56 @@ export const generateWithClaude = async (
     maxTokens?: number;
     temperature?: number;
     systemPrompt?: string;
+    maxRetries?: number;
   } = {}
 ) => {
-  try {
-    const {
-      model = 'claude-3-5-sonnet-20241022',
-      maxTokens = 4096,
-      temperature = 0.7,
-      systemPrompt = 'You are a helpful AI assistant specialized in creating digital products like ebooks, courses, and guides. Always provide high-quality, well-structured, and engaging content.',
-    } = options;
+  const {
+    model = 'claude-3-5-sonnet-20241022',
+    maxTokens = 4096,
+    temperature = 0.7,
+    systemPrompt = 'You are a helpful AI assistant specialized in creating digital products like ebooks, courses, and guides. Always provide high-quality, well-structured, and engaging content.',
+    maxRetries = 3,
+  } = options;
 
-    const message = await anthropic.messages.create({
-      model,
-      max_tokens: maxTokens,
-      temperature,
-      system: systemPrompt,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-    });
+  return retryWithBackoff(async () => {
+    try {
+      const message = await anthropic.messages.create({
+        model,
+        max_tokens: maxTokens,
+        temperature,
+        system: systemPrompt,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+      });
 
-    const content = message.content[0];
-    const textContent = content.type === 'text' ? content.text : '';
+      const content = message.content[0];
+      const textContent = content.type === 'text' ? content.text : '';
 
-    // Try to parse JSON if the response looks like JSON
-    let parsedContent = textContent;
-    if (textContent.trim().startsWith('{') || textContent.trim().startsWith('[')) {
-      try {
-        parsedContent = JSON.parse(textContent);
-      } catch {
-        // If parsing fails, return as text
+      // Try to parse JSON if the response looks like JSON
+      let parsedContent = textContent;
+      if (textContent.trim().startsWith('{') || textContent.trim().startsWith('[')) {
+        try {
+          parsedContent = JSON.parse(textContent);
+        } catch {
+          // If parsing fails, return as text
+        }
       }
-    }
 
-    return {
-      content: parsedContent,
-      tokensUsed: message.usage.input_tokens + message.usage.output_tokens,
-      model: message.model,
-      stopReason: message.stop_reason,
-    };
-  } catch (error: any) {
-    console.error('Anthropic API error:', error);
-    throw new Error(error.message || 'Failed to generate AI content');
-  }
+      return {
+        content: parsedContent,
+        tokensUsed: message.usage.input_tokens + message.usage.output_tokens,
+        model: message.model,
+        stopReason: message.stop_reason,
+      };
+    } catch (error: any) {
+      console.error('Anthropic API error:', error);
+      throw new Error(error.message || 'Failed to generate AI content');
+    }
+  }, maxRetries);
 };
 
 export const generateIdeas = async (niche: string, audience?: string) => {
