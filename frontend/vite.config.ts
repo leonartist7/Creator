@@ -4,7 +4,7 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  logLevel: 'error', // Only show errors, no info/warn
+  // logLevel: 'error', // Commented out to show startup info
   clearScreen: false, // Don't clear screen on HMR
   resolve: {
     alias: {

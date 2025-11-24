@@ -19,11 +19,8 @@ import {
   Clock,
   Target,
   Zap,
-  Award,
   ChevronRight,
-  BarChart3,
   Edit3,
-  Rocket,
   GraduationCap,
   FileType,
 } from 'lucide-react';
@@ -194,58 +191,7 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card className="glass-strong p-6 hover:glow-sm transition-all">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-secondary mb-1">Total Projects</p>
-                <p className="text-3xl font-bold text-primary">{projects.length}</p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-primary-500/20 flex items-center justify-center">
-                <BookOpen className="text-primary-400" size={24} />
-              </div>
-            </div>
-          </Card>
-
-          <Card className="glass-strong p-6 hover:glow-sm transition-all">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-secondary mb-1">In Progress</p>
-                <p className="text-3xl font-bold text-primary">{getStatusCount('in_progress')}</p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-warning-500/20 flex items-center justify-center">
-                <FileText className="text-warning-400" size={24} />
-              </div>
-            </div>
-          </Card>
-
-          <Card className="glass-strong p-6 hover:glow-sm transition-all">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-secondary mb-1">Completed</p>
-                <p className="text-3xl font-bold text-primary">{getStatusCount('completed')}</p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-success-500/20 flex items-center justify-center">
-                <Award className="text-success-400" size={24} />
-              </div>
-            </div>
-          </Card>
-
-          <Card className="glass-strong p-6 hover:glow-sm transition-all">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-secondary mb-1">Total Words</p>
-                <p className="text-3xl font-bold text-primary">
-                  {projects.reduce((sum, p) => sum + p.metadata.wordCount, 0).toLocaleString()}
-                </p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-secondary-500/20 flex items-center justify-center">
-                <Sparkles className="text-secondary-400" size={24} />
-              </div>
-            </div>
-          </Card>
-        </div>
+        {/* Stats Grid Removed as per user request */}
 
         {/* Main Content Grid */}
         <div className="grid lg:grid-cols-3 gap-6 mb-8">
@@ -311,10 +257,10 @@ export default function DashboardPage() {
                               project.status === 'published'
                                 ? 'success'
                                 : project.status === 'completed'
-                                ? 'primary'
-                                : project.status === 'in_progress'
-                                ? 'warning'
-                                : 'gray'
+                                  ? 'primary'
+                                  : project.status === 'in_progress'
+                                    ? 'warning'
+                                    : 'gray'
                             }
                           >
                             {project.status.replace('_', ' ')}
@@ -381,12 +327,12 @@ export default function DashboardPage() {
                     {currentStreak === 0
                       ? '🎯 Write today to start your streak!'
                       : currentStreak === 1
-                      ? '🔥 Great start! Write again tomorrow!'
-                      : currentStreak < 7
-                      ? '💪 Keep it going! You\'re building momentum!'
-                      : currentStreak < 30
-                      ? '⭐ Amazing! You\'re on fire!'
-                      : '🏆 Legendary! You\'re a writing machine!'}
+                        ? '🔥 Great start! Write again tomorrow!'
+                        : currentStreak < 7
+                          ? '💪 Keep it going! You\'re building momentum!'
+                          : currentStreak < 30
+                            ? '⭐ Amazing! You\'re on fire!'
+                            : '🏆 Legendary! You\'re a writing machine!'}
                   </p>
                   <div className="mt-3 pt-3 border-t border-primary/10">
                     <p className="text-xs text-muted">
@@ -419,8 +365,8 @@ export default function DashboardPage() {
                     {productivityScore >= 80
                       ? '🎉 Excellent work! You\'re crushing it!'
                       : productivityScore >= 50
-                      ? '💪 Great progress! Keep it up!'
-                      : '🚀 Get started creating more projects!'}
+                        ? '💪 Great progress! Keep it up!'
+                        : '🚀 Get started creating more projects!'}
                   </p>
                 </div>
               </div>

@@ -1,163 +1,71 @@
-// Upload Service - File validation and upload handling
-// US1 Implementation - T031
-
+import { fileStorage } from '../utils/file-storage';
+import Masterwork from '../models/Masterwork';
 import path from 'path';
 
-export interface FileValidationResult {
-  valid: boolean;
-  errors: string[];
+interface UploadResult {
+  masterwork: Masterwork;
+  message: string;
 }
 
 export class UploadService {
-  private static readonly MAX_FILE_SIZE = 52428800; // 50MB in bytes
-  private static readonly ALLOWED_FORMATS = ['.pdf', '.epub', '.docx', '.txt', '.md'];
-  private static readonly ALLOWED_MIMETYPES = [
-    'application/pdf',
-    'application/epub+zip',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'text/plain',
-    'text/markdown'
-  ];
-
   /**
-   * Validate uploaded file (format and size)
+   * Process an uploaded file and create a Masterwork record
    */
-  validateFile(file: Express.Multer.File): FileValidationResult {
-    const errors: string[] = [];
+  public async processUpload(
+    userId: string,
+    file: Express.Multer.File,
+    metadata: { title?: string; author?: string } = {}
+  ): Promise<UploadResult> {
+    // 1. Validate file type
+    const allowedFormats = ['.pdf', '.epub', '.docx', '.txt', '.md'];
+    const ext = path.extname(file.originalname).toLowerCase();
 
-    // Check if file exists
-    if (!file) {
-      errors.push('No file provided');
-      return { valid: false, errors };
+    if (!allowedFormats.includes(ext)) {
+      throw new Error(`Invalid file format. Allowed: ${allowedFormats.join(', ')}`);
     }
 
-    // Validate file size
-    if (!this.validateFileSize(file.size)) {
-      if (file.size === 0) {
-        errors.push('File is empty (0 bytes)');
-      } else {
-        errors.push(`File size exceeds maximum allowed size of 50MB (${this.formatBytes(file.size)} provided)`);
-      }
-    }
+    // 2. Determine format enum
+    let format: 'PDF' | 'EPUB' | 'DOCX' | 'TXT' | 'MD' = 'PDF';
+    if (ext === '.epub') format = 'EPUB';
+    else if (ext === '.docx') format = 'DOCX';
+    else if (ext === '.txt') format = 'TXT';
+    else if (ext === '.md') format = 'MD';
 
-    // Validate file format
-    if (!this.validateFileFormat(file.originalname, file.mimetype)) {
-      const ext = this.getFileExtension(file.originalname);
-      errors.push(
-        `Invalid file format: ${ext || 'unknown'}. Allowed formats: PDF, EPUB, DOCX, TXT, MD`
-      );
-    }
+    // 3. Save file to storage
+    const storedFilename = await fileStorage.saveFile(file.buffer, file.originalname);
+
+    // 4. Create Masterwork record
+    const masterwork = await Masterwork.create({
+      user_id: userId,
+      title: metadata.title || file.originalname,
+      author: metadata.author || null,
+      format,
+      file_size: file.size,
+      file_path: storedFilename,
+      word_count: 0, // Will be updated by extraction job
+      extraction_status: 'pending',
+      analysis_status: 'not_started',
+      upload_date: new Date(),
+      last_accessed: new Date()
+    });
+
+    // 5. Trigger background extraction job
+    // For MVP, we run this "inline" but non-blocking (fire and forget)
+    // In production, this should go to a Redis queue
+    console.log(`[UploadService] Starting extraction for masterwork ${masterwork.id}`);
+
+    // Don't await this, let it run in background
+    import('./extraction.service').then(({ extractionService }) => {
+      extractionService.extractAndChunk(masterwork.id).catch(err => {
+        console.error(`[UploadService] Background extraction failed:`, err);
+      });
+    });
 
     return {
-      valid: errors.length === 0,
-      errors
-    };
-  }
-
-  /**
-   * Validate file format based on extension and MIME type
-   */
-  validateFileFormat(filename: string, mimetype: string): boolean {
-    const extension = this.getFileExtension(filename);
-
-    // Check extension
-    if (!this.isAllowedFormat(extension)) {
-      return false;
-    }
-
-    // Optionally verify MIME type matches (less strict to allow variation)
-    // We primarily trust the extension but MIME type adds extra validation
-    return true;
-  }
-
-  /**
-   * Validate file size
-   */
-  validateFileSize(fileSize: number): boolean {
-    return fileSize > 0 && fileSize <= UploadService.MAX_FILE_SIZE;
-  }
-
-  /**
-   * Get file extension from filename (normalized to lowercase with dot)
-   */
-  getFileExtension(filename: string): string {
-    const ext = path.extname(filename).toLowerCase();
-    return ext;
-  }
-
-  /**
-   * Check if file extension is in allowed list
-   */
-  isAllowedFormat(extension: string): boolean {
-    const normalized = extension.toLowerCase();
-    return UploadService.ALLOWED_FORMATS.includes(normalized);
-  }
-
-  /**
-   * Get file format enum from filename
-   */
-  getFileFormat(filename: string): 'PDF' | 'EPUB' | 'DOCX' | 'TXT' | 'MD' | null {
-    const ext = this.getFileExtension(filename);
-
-    switch (ext) {
-      case '.pdf':
-        return 'PDF';
-      case '.epub':
-        return 'EPUB';
-      case '.docx':
-        return 'DOCX';
-      case '.txt':
-        return 'TXT';
-      case '.md':
-        return 'MD';
-      default:
-        return null;
-    }
-  }
-
-  /**
-   * Format bytes to human-readable string
-   */
-  private formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
-  }
-
-  /**
-   * Sanitize filename for safe storage
-   */
-  sanitizeFilename(filename: string): string {
-    // Remove path traversal attempts
-    const basename = path.basename(filename);
-
-    // Replace unsafe characters but preserve extension
-    const ext = path.extname(basename);
-    const name = path.basename(basename, ext);
-
-    // Replace unsafe characters with underscores
-    const safeName = name.replace(/[^a-zA-Z0-9._-]/g, '_');
-
-    // Limit length
-    const maxLength = 200;
-    const truncatedName = safeName.substring(0, maxLength);
-
-    return truncatedName + ext;
-  }
-
-  /**
-   * Get upload configuration
-   */
-  getUploadConfig() {
-    return {
-      maxFileSize: UploadService.MAX_FILE_SIZE,
-      allowedFormats: UploadService.ALLOWED_FORMATS,
-      allowedMimetypes: UploadService.ALLOWED_MIMETYPES
+      masterwork,
+      message: 'File uploaded successfully. Processing started.'
     };
   }
 }
 
-// Export singleton instance
 export const uploadService = new UploadService();
