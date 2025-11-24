@@ -22,23 +22,31 @@ export const Navbar = () => {
           <div className="flex items-center gap-6">
             <Link
               to="/"
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
-                isActive('/')
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${isActive('/')
                   ? 'bg-purple-500 text-white glow-sm'
                   : 'text-white/70 hover:text-white hover:bg-white/10'
-              }`}
+                }`}
             >
-              <Home size={18} />
               <span>Dashboard</span>
             </Link>
 
             <Link
-              to="/resources"
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
-                isActive('/resources')
+              to="/knowledge-vault"
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${isActive('/knowledge-vault')
                   ? 'bg-purple-500 text-white glow-sm'
                   : 'text-white/70 hover:text-white hover:bg-white/10'
-              }`}
+                }`}
+            >
+              <BookOpen size={18} />
+              <span>Knowledge Vault</span>
+            </Link>
+
+            <Link
+              to="/resources"
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${isActive('/resources')
+                  ? 'bg-purple-500 text-white glow-sm'
+                  : 'text-white/70 hover:text-white hover:bg-white/10'
+                }`}
             >
               <BookOpen size={18} />
               <span>Resources</span>
@@ -46,11 +54,10 @@ export const Navbar = () => {
 
             <Link
               to="/settings"
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
-                isActive('/settings')
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${isActive('/settings')
                   ? 'bg-purple-500 text-white glow-sm'
                   : 'text-white/70 hover:text-white hover:bg-white/10'
-              }`}
+                }`}
             >
               <Settings size={18} />
               <span>Settings</span>

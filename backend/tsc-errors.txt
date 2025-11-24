@@ -1,0 +1,15 @@
+﻿src/data/in-memory-store.ts(4,10): error TS2614: Module '"../models/Masterwork"' has no exported member 'Masterwork'. Did you mean to use 'import Masterwork from "../models/Masterwork"' instead?
+src/data/in-memory-store.ts(6,10): error TS2614: Module '"../models/StyleProfile"' has no exported member 'StyleProfile'. Did you mean to use 'import StyleProfile from "../models/StyleProfile"' instead?
+src/data/in-memory-store.ts(7,10): error TS2614: Module '"../models/TextChunk"' has no exported member 'TextChunk'. Did you mean to use 'import TextChunk from "../models/TextChunk"' instead?
+src/jobs/analyzeStyle.job.ts(50,53): error TS2339: Property 'analyzeStyle' does not exist on type 'StyleAnalysisService'.
+src/jobs/extractText.job.ts(37,44): error TS2339: Property 'extractAndStoreText' does not exist on type 'ExtractionService'.
+src/jobs/extractText.job.ts(40,77): error TS2339: Property 'getExtractionStats' does not exist on type 'ExtractionService'.
+src/models/MasterworkUpload.ts(4,10): error TS2614: Module '"./Masterwork"' has no exported member 'FileFormat'. Did you mean to use 'import FileFormat from "./Masterwork"' instead?
+src/services/ai-style-integration.service.ts(4,10): error TS2614: Module '"../models/StyleProfile"' has no exported member 'StyleProfile'. Did you mean to use 'import StyleProfile from "../models/StyleProfile"' instead?
+src/services/masterwork.service.ts(6,3): error TS2614: Module '"../models/Masterwork"' has no exported member 'Masterwork'. Did you mean to use 'import Masterwork from "../models/Masterwork"' instead?
+src/services/masterwork.service.ts(7,3): error TS2614: Module '"../models/Masterwork"' has no exported member 'CreateMasterworkInput'. Did you mean to use 'import CreateMasterworkInput from "../models/Masterwork"' instead?
+src/services/masterwork.service.ts(8,3): error TS2614: Module '"../models/Masterwork"' has no exported member 'UpdateMasterworkInput'. Did you mean to use 'import UpdateMasterworkInput from "../models/Masterwork"' instead?
+src/services/masterwork.service.ts(9,3): error TS2614: Module '"../models/Masterwork"' has no exported member 'MasterworkValidator'. Did you mean to use 'import MasterworkValidator from "../models/Masterwork"' instead?
+src/services/masterwork.service.ts(17,10): error TS2305: Module '"../utils/file-storage"' has no exported member 'getStorage'.
+src/services/search.service.ts(5,10): error TS2614: Module '"../models/TextChunk"' has no exported member 'TextChunk'. Did you mean to use 'import TextChunk from "../models/TextChunk"' instead?
+src/services/search.service.ts(6,10): error TS2614: Module '"../models/Masterwork"' has no exported member 'Masterwork'. Did you mean to use 'import Masterwork from "../models/Masterwork"' instead?

@@ -65,6 +65,7 @@
   },
   "devDependencies": {
     "@types/bull": "^3.15.9",
+    "@types/helmet": "^0.0.48",
     "@types/multer": "^2.0.0",
     "@types/natural": "^5.1.5",
     "@types/pdf-parse": "^1.1.5",

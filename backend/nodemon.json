@@ -1,8 +1,12 @@
 {
-  "watch": ["src"],
+  "watch": [
+    "src"
+  ],
   "ext": "ts,json",
-  "ignore": ["src/**/*.spec.ts"],
-  "exec": "ts-node src/index.ts",
+  "ignore": [
+    "src/**/*.spec.ts"
+  ],
+  "exec": "ts-node --transpile-only src/index.ts",
   "quiet": true,
   "verbose": false,
   "colours": false

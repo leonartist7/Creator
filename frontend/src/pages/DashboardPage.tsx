@@ -1,83 +1,28 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/layout/Navbar';
-import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { LoadingSkeleton, CardSkeleton } from '../components/ui/LoadingSkeleton';
 import { Badge } from '../components/ui/Badge';
 import { useToast } from '../components/ui/Toast';
-import { ProjectTemplatesModal } from '../components/Projects/ProjectTemplatesModal';
-import { QuickActionsPanel } from '../components/Dashboard/QuickActionsPanel';
+import { CreateProjectModal } from '../components/Projects/CreateProjectModal';
 import { db } from '../lib/storage/db';
 import type { Project } from '../lib/storage/db';
 import {
   Plus,
-  BookOpen,
   FileText,
-  Sparkles,
-  TrendingUp,
-  Clock,
-  Target,
-  Zap,
   ChevronRight,
-  Edit3,
-  GraduationCap,
-  FileType,
 } from 'lucide-react';
-import '../styles/glassmorphism.css';
-
-interface ProjectTemplate {
-  id: string;
-  name: string;
-  description: string;
-  type: 'ebook' | 'course' | 'guide';
-  icon: typeof BookOpen;
-  color: string;
-}
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentStreak, setCurrentStreak] = useState(0);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
   const { error: showError } = useToast();
 
   useEffect(() => {
     loadProjects();
-    calculateWritingStreak();
   }, []);
-
-  const calculateWritingStreak = () => {
-    // Get writing days from localStorage
-    const writingDaysStr = localStorage.getItem('writingDays');
-    if (!writingDaysStr) {
-      setCurrentStreak(0);
-      return;
-    }
-
-    const writingDays: string[] = JSON.parse(writingDaysStr);
-    const today = new Date().toDateString();
-
-    // Calculate current streak
-    let streak = 0;
-    const now = new Date();
-
-    for (let i = 0; i < 365; i++) {
-      const checkDate = new Date(now);
-      checkDate.setDate(checkDate.getDate() - i);
-      const dateStr = checkDate.toDateString();
-
-      if (writingDays.includes(dateStr)) {
-        streak++;
-      } else if (i > 0) {
-        // Break if we find a missing day (except today)
-        break;
-      }
-    }
-
-    setCurrentStreak(streak);
-  };
 
   const loadProjects = async () => {
     try {
@@ -91,334 +36,117 @@ export default function DashboardPage() {
     }
   };
 
-  const projectTemplates: ProjectTemplate[] = [
-    {
-      id: 'ebook',
-      name: 'eBook',
-      description: 'Digital book or comprehensive guide',
-      type: 'ebook',
-      icon: BookOpen,
-      color: 'primary',
-    },
-    {
-      id: 'course',
-      name: 'Online Course',
-      description: 'Step-by-step educational content',
-      type: 'course',
-      icon: GraduationCap,
-      color: 'secondary',
-    },
-    {
-      id: 'guide',
-      name: 'How-To Guide',
-      description: 'Practical tutorials and instructions',
-      type: 'guide',
-      icon: FileType,
-      color: 'accent',
-    },
-  ];
-
-  const handleCreateFromTemplate = (type: 'ebook' | 'course' | 'guide') => {
-    navigate(`/editor?type=${type}`);
-  };
-
-  const getStatusCount = (status: string): number => {
-    return projects.filter((p) => p.status === status).length;
-  };
-
-  const getRecentActivity = () => {
-    return projects
-      .sort((a, b) => new Date(b.metadata.lastEdited).getTime() - new Date(a.metadata.lastEdited).getTime())
-      .slice(0, 5)
-      .map((project) => ({
-        id: project.id,
-        title: project.title,
-        action: 'Updated',
-        time: new Date(project.metadata.lastEdited),
-        status: project.status,
-      }));
-  };
-
-  const getProductivityScore = (): number => {
-    const totalProjects = projects.length;
-    const completedProjects = getStatusCount('completed');
-    const totalWords = projects.reduce((sum, p) => sum + p.metadata.wordCount, 0);
-
-    const projectScore = Math.min(totalProjects * 10, 40);
-    const completionScore = Math.min(completedProjects * 15, 30);
-    const wordScore = Math.min(Math.floor(totalWords / 1000) * 2, 30);
-
-    return Math.min(projectScore + completionScore + wordScore, 100);
-  };
-
   if (isLoading) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-[#0a0a0a]">
         <Navbar />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <LoadingSkeleton height="2.5rem" width="300px" className="mb-2" />
-          <LoadingSkeleton height="1.5rem" width="400px" className="mb-8" />
-          <div className="grid md:grid-cols-4 gap-6 mb-8">
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="mb-8">
+            <div className="h-8 w-48 bg-white/5 rounded mb-2 animate-pulse" />
+            <div className="h-4 w-96 bg-white/5 rounded animate-pulse" />
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-48 bg-white/5 rounded-2xl animate-pulse" />
+            ))}
           </div>
         </div>
       </div>
     );
   }
 
-  const productivityScore = getProductivityScore();
-  const recentActivity = getRecentActivity();
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-purple-900/10 dark:to-gray-900">
+    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-purple-500/30">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        {/* Simple Header */}
+        <div className="flex justify-between items-center mb-12">
           <div>
-            <h1 className="text-3xl font-bold text-primary mb-2">Dashboard</h1>
-            <p className="text-secondary">Welcome back! Here's your creative workspace.</p>
+            <h1 className="text-4xl font-bold text-white mb-2">Dashboard</h1>
+            <p className="text-gray-400 text-lg">Your creative workspace</p>
           </div>
-          <Link to="/editor">
-            <Button size="lg" className="btn-gradient shadow-lg glow">
-              <Plus size={20} className="mr-2" />
-              New Project
-            </Button>
-          </Link>
+          <Button
+            size="lg"
+            onClick={() => setShowTemplatesModal(true)}
+            className="bg-white text-black hover:bg-gray-200 font-semibold px-6 py-3 rounded-xl transition-all active:scale-95"
+          >
+            <Plus size={20} className="mr-2" />
+            New Project
+          </Button>
         </div>
 
-        {/* Stats Grid Removed as per user request */}
-
-        {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-3 gap-6 mb-8">
-          {/* Left Column - Projects & Activity */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Recent Projects */}
-            <Card className="glass-strong p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-lg font-semibold text-primary">Recent Projects</h3>
-                  <p className="text-sm text-secondary">Your latest work</p>
-                </div>
-                <Link to="/projects">
-                  <Button variant="outline" size="sm" className="glass">
-                    View All
-                  </Button>
-                </Link>
-              </div>
-
-              {projects.length === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed border-primary/20 rounded-lg">
-                  <BookOpen size={48} className="text-muted mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-primary mb-2">No projects yet</h3>
-                  <p className="text-secondary mb-6">Get started by creating your first digital product</p>
-                  <div className="flex gap-3 justify-center">
-                    <Button onClick={() => setShowTemplatesModal(true)} className="btn-gradient">
-                      <Sparkles size={18} className="mr-2" />
-                      Start from Template
-                    </Button>
-                    <Link to="/editor">
-                      <Button variant="outline">
-                        <Plus size={18} className="mr-2" />
-                        Blank Project
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {projects.slice(0, 5).map((project) => (
-                    <Link
-                      key={project.id}
-                      to={`/editor/${project.id}`}
-                      className="block p-4 rounded-lg glass hover:glass-strong hover:glow-sm transition-all group"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3 flex-1">
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center flex-shrink-0">
-                            <FileText className="w-5 h-5 text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-primary group-hover:text-purple-300 transition-colors truncate">
-                              {project.title}
-                            </h4>
-                            <p className="text-sm text-secondary capitalize">
-                              {project.type} • {project.metadata.wordCount.toLocaleString()} words
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Badge
-                            variant={
-                              project.status === 'published'
-                                ? 'success'
-                                : project.status === 'completed'
-                                  ? 'primary'
-                                  : project.status === 'in_progress'
-                                    ? 'warning'
-                                    : 'gray'
-                            }
-                          >
-                            {project.status.replace('_', ' ')}
-                          </Badge>
-                          <ChevronRight className="w-5 h-5 text-white/40 group-hover:text-purple-400 transition-colors" />
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </Card>
-
-            {/* Recent Activity Timeline */}
-            {recentActivity.length > 0 && (
-              <Card className="glass-strong p-6">
-                <div className="flex items-center gap-2 mb-6">
-                  <Clock className="w-5 h-5 text-secondary" />
-                  <h3 className="text-lg font-semibold text-primary">Recent Activity</h3>
-                </div>
-
-                <div className="space-y-4">
-                  {recentActivity.map((activity, index) => (
-                    <div key={activity.id} className="flex gap-4">
-                      <div className="flex flex-col items-center">
-                        <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                          <Edit3 className="w-4 h-4 text-purple-400" />
-                        </div>
-                        {index < recentActivity.length - 1 && (
-                          <div className="w-0.5 h-full bg-white/10 mt-2"></div>
-                        )}
-                      </div>
-                      <div className="flex-1 pb-4">
-                        <p className="text-sm font-medium text-primary">{activity.title}</p>
-                        <p className="text-xs text-secondary mt-1">
-                          {activity.action} • {activity.time.toLocaleDateString()} at{' '}
-                          {activity.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            )}
+        {/* Projects Grid */}
+        {projects.length === 0 ? (
+          <div className="text-center py-24 border-2 border-dashed border-white/10 rounded-2xl">
+            <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Plus className="w-8 h-8 text-gray-600" />
+            </div>
+            <h3 className="text-xl font-medium text-white mb-2">No projects yet</h3>
+            <p className="text-gray-400 mb-6">Create your first digital product to get started</p>
+            <Button
+              onClick={() => setShowTemplatesModal(true)}
+              className="bg-white text-black hover:bg-gray-200 font-semibold"
+            >
+              <Plus size={18} className="mr-2" />
+              Create Project
+            </Button>
           </div>
-
-          {/* Right Column - Insights & Templates */}
-          <div className="space-y-6">
-            {/* Writing Streak */}
-            <Card className="glass-strong p-6 bg-gradient-to-br from-orange-500/10 to-red-500/10 border-orange-500/20">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-md">
-                  <Target className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-primary mb-2">Writing Streak</h3>
-                  <div className="flex items-end gap-2 mb-3">
-                    <span className="text-4xl font-bold text-primary">{currentStreak}</span>
-                    <span className="text-lg text-secondary mb-1">
-                      {currentStreak === 1 ? 'day' : 'days'}
-                    </span>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects.map((project) => (
+              <Link
+                key={project.id}
+                to={`/editor/${project.id}`}
+                className="group block bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/50 rounded-2xl p-6 transition-all hover:shadow-lg hover:shadow-purple-500/10"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                    <FileText className="w-6 h-6 text-purple-400" />
                   </div>
-                  <p className="text-sm text-secondary">
-                    {currentStreak === 0
-                      ? '🎯 Write today to start your streak!'
-                      : currentStreak === 1
-                        ? '🔥 Great start! Write again tomorrow!'
-                        : currentStreak < 7
-                          ? '💪 Keep it going! You\'re building momentum!'
-                          : currentStreak < 30
-                            ? '⭐ Amazing! You\'re on fire!'
-                            : '🏆 Legendary! You\'re a writing machine!'}
-                  </p>
-                  <div className="mt-3 pt-3 border-t border-primary/10">
-                    <p className="text-xs text-muted">
-                      Write every day to build your streak!
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-white truncate group-hover:text-purple-300 transition-colors">
+                      {project.title}
+                    </h3>
+                    <p className="text-sm text-gray-400 capitalize">
+                      {project.type}
                     </p>
                   </div>
                 </div>
-              </div>
-            </Card>
 
-            {/* Productivity Score */}
-            <Card className="glass-strong p-6 bg-gradient-to-br from-primary-500/10 to-secondary-500/10 border-primary-500/20">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-secondary-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-md">
-                  <TrendingUp className="w-6 h-6 text-primary" />
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-400">
+                    {project.metadata.wordCount.toLocaleString()} words
+                  </span>
+                  <Badge
+                    variant={
+                      project.status === 'published'
+                        ? 'success'
+                        : project.status === 'completed'
+                          ? 'primary'
+                          : project.status === 'in_progress'
+                            ? 'warning'
+                            : 'gray'
+                    }
+                  >
+                    {project.status.replace('_', ' ')}
+                  </Badge>
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-primary mb-2">Productivity Score</h3>
-                  <div className="flex items-end gap-2 mb-3">
-                    <span className="text-4xl font-bold text-primary">{productivityScore}</span>
-                    <span className="text-lg text-secondary mb-1">/100</span>
-                  </div>
-                  <div className="w-full bg-white/10 rounded-full h-2 mb-3">
-                    <div
-                      className="bg-gradient-to-r from-primary-400 to-secondary-400 h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${productivityScore}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-sm text-secondary">
-                    {productivityScore >= 80
-                      ? '🎉 Excellent work! You\'re crushing it!'
-                      : productivityScore >= 50
-                        ? '💪 Great progress! Keep it up!'
-                        : '🚀 Get started creating more projects!'}
-                  </p>
+
+                <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+                  <span className="text-xs text-gray-500">
+                    {new Date(project.metadata.lastEdited).toLocaleDateString()}
+                  </span>
+                  <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-purple-400 transition-colors" />
                 </div>
-              </div>
-            </Card>
-
-
-            {/* Quick Actions Panel */}
-            <QuickActionsPanel onOpenTemplates={() => setShowTemplatesModal(true)} />
-            {/* Tips & Insights */}
-            <Card className="glass-strong p-6 bg-gradient-to-br from-secondary-500/10 to-accent-500/10 border-secondary-500/20">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-secondary-600 to-accent-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Zap className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-primary mb-1">Pro Tips</h3>
-                  <p className="text-sm text-secondary">Boost your productivity</p>
-                </div>
-              </div>
-
-              <ul className="space-y-3 text-sm text-secondary">
-                <li className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 bg-secondary-400 rounded-full mt-1.5 flex-shrink-0"></span>
-                  <span>Use ⌘K command palette for quick navigation</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 bg-secondary-400 rounded-full mt-1.5 flex-shrink-0"></span>
-                  <span>Type ++ in editor to expand text with AI</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 bg-secondary-400 rounded-full mt-1.5 flex-shrink-0"></span>
-                  <span>Enable Focus Mode for distraction-free writing</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 bg-secondary-400 rounded-full mt-1.5 flex-shrink-0"></span>
-                  <span>Projects auto-save every 30 seconds</span>
-                </li>
-              </ul>
-
-              <Link to="/analytics">
-                <Button variant="outline" size="sm" className="w-full mt-4 glass">
-                  View Full Analytics
-                  <ChevronRight size={16} className="ml-2" />
-                </Button>
               </Link>
-            </Card>
+            ))}
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Project Templates Modal */}
-      <ProjectTemplatesModal
+      {/* Create Project Modal */}
+      <CreateProjectModal
         isOpen={showTemplatesModal}
         onClose={() => setShowTemplatesModal(false)}
       />

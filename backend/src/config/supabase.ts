@@ -7,24 +7,25 @@ const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || '';
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
 
-// Check if Supabase is configured
-const isSupabaseConfigured = supabaseUrl && supabaseServiceKey;
+// Check if Supabase is properly configured with valid URLs
+const isValidUrl = (url: string) => {
+  try {
+    return url && url.startsWith('http') && new URL(url);
+  } catch {
+    return false;
+  }
+};
 
-// Supabase warnings disabled for cleaner logs
-// if (!isSupabaseConfigured) {
-//   console.warn('⚠️  Supabase environment variables not configured. Running without database.');
-//   console.warn('   The app will work with frontend-only features (AI tools, local storage).');
-//   console.warn('   To enable backend features, add Supabase credentials to backend/.env');
-// }
+const isSupabaseConfigured = isValidUrl(supabaseUrl) && supabaseServiceKey;
 
-// Create clients only if configured, otherwise export null
+// Create clients only if properly configured
 export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  })
   : null;
 
 // Regular client with anon key for client-side operations

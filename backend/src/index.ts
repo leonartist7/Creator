@@ -66,16 +66,38 @@ app.use('/api/ai-studio', aiStyleRoutes);
 // Error handling
 app.use(errorHandler);
 
-// Test Supabase connection and start server
+// Initialize database and start server
 const startServer = async () => {
   try {
-    // Silently test Supabase connection if configured
+    // Import sequelize and models
+    const { sequelize } = await import('./database/connection');
+    const Masterwork = (await import('./models/Masterwork')).default;
+    const StyleProfile = (await import('./models/StyleProfile')).default;
+    const TextChunk = (await import('./models/TextChunk')).default;
+
+    // Define model associations
+    Masterwork.hasOne(StyleProfile, { foreignKey: 'masterwork_id', as: 'style_profile' });
+    StyleProfile.belongsTo(Masterwork, { foreignKey: 'masterwork_id', as: 'masterwork' });
+
+    Masterwork.hasMany(TextChunk, { foreignKey: 'masterwork_id', as: 'text_chunks' });
+    TextChunk.belongsTo(Masterwork, { foreignKey: 'masterwork_id', as: 'masterwork' });
+
+    // Sync database (creates tables if they don't exist)
+    await sequelize.sync({ alter: true });
+    console.log('✓ Database synchronized');
+
+    // Optionally test Supabase connection if configured (for other features)
     if (supabase) {
-      await supabase.from('user_profiles').select('count').limit(1);
+      try {
+        await supabase.from('user_profiles').select('count').limit(1);
+        console.log('✓ Supabase connected');
+      } catch (e) {
+        console.log('ℹ Supabase not configured (optional)');
+      }
     }
 
     app.listen(PORT, () => {
-      console.log(`Server: http://localhost:${PORT}`);
+      console.log(`✓ Server: http://localhost:${PORT}`);
     });
   } catch (error) {
     console.error('Server error:', error);

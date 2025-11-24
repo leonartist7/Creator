@@ -40,8 +40,15 @@ export class MasterworkController {
       // TODO: Get real user ID
       const userId = req.query.userId as string || 'test-user-id';
 
+      const StyleProfile = (await import('../models/StyleProfile')).default;
+
       const masterworks = await Masterwork.findAll({
         where: { user_id: userId },
+        include: [{
+          model: StyleProfile,
+          as: 'style_profile',
+          required: false
+        }],
         order: [['upload_date', 'DESC']]
       });
 
@@ -58,7 +65,15 @@ export class MasterworkController {
   public async get(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const masterwork = await Masterwork.findByPk(id);
+      const StyleProfile = (await import('../models/StyleProfile')).default;
+
+      const masterwork = await Masterwork.findByPk(id, {
+        include: [{
+          model: StyleProfile,
+          as: 'style_profile',
+          required: false
+        }]
+      });
 
       if (!masterwork) {
         res.status(404).json({ error: 'Masterwork not found' });

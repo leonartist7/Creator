@@ -11,6 +11,7 @@ import ProjectsPage from './pages/ProjectsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import SettingsPage from './pages/SettingsPage';
 import ResourceLibraryPage from './pages/ResourceLibraryPage';
+import KnowledgeVaultPage from './pages/KnowledgeVault';
 import './styles/index.css';
 
 function AppContent() {
@@ -27,6 +28,7 @@ function AppContent() {
         <Route path="/editor/:id?" element={<EditorPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/resources" element={<ResourceLibraryPage />} />
+        <Route path="/knowledge-vault" element={<KnowledgeVaultPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
